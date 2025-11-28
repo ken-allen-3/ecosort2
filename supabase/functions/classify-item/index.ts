@@ -99,6 +99,20 @@ const municipalRules: Record<string, Record<string, string>> = {
     "motor oil": "Never pour down drain. Take to any AutoZone or EDCO station for free recycling.",
     "textiles": "Clothing and fabrics accepted in blue bin if clean and dry. Place in clear plastic bag.",
   },
+  "cincinnati": {
+    "pizza box": "Clean boxes can be recycled. Greasy boxes go in trash.",
+    "plastic bag": "Not accepted curbside. Return to grocery stores for recycling.",
+    "glass bottle": "All colors accepted in recycling cart. Rinse and leave caps/lids on.",
+    "food scraps": "Not collected curbside. Consider home composting or drop-off sites.",
+    "cardboard": "Flatten and place in recycling cart. Remove packing materials and tape.",
+    "styrofoam": "Not recyclable in Cincinnati. Place in trash cart.",
+    "plastic container": "Plastics #1-5 accepted. Rinse clean and leave lids on.",
+    "yard waste": "Bundle branches or use paper bags. Set out separately from trash. 4 foot length limit.",
+    "batteries": "Never in trash or recycling. Drop off at Rumpke Recycling Center or hazardous waste events.",
+    "electronics": "Free curbside pickup for TVs and electronics. Call (513) 591-6000 to schedule.",
+    "aluminum can": "Rinse and place in recycling cart. No need to crush.",
+    "newspaper": "Bundle or place loose in recycling cart. Keep dry.",
+  },
 };
 
 serve(async (req) => {
