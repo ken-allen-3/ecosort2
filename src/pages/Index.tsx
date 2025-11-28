@@ -9,6 +9,7 @@ import LocationInput from "@/components/LocationInput";
 import AnalysisDebugger from "@/components/AnalysisDebugger";
 import WelcomeOverlay from "@/components/WelcomeOverlay";
 import ExampleImages from "@/components/ExampleImages";
+import AnalysisLoading from "@/components/AnalysisLoading";
 
 interface ClassificationResult {
   category: "recyclable" | "compostable" | "trash";
@@ -273,6 +274,8 @@ const Index = () => {
           </div>
         )}
       </main>
+
+      {isAnalyzing && <AnalysisLoading />}
 
       {result && (
         <ResultModal
