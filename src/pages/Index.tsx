@@ -29,26 +29,67 @@ const Index = () => {
   const { toast } = useToast();
 
   const detectLocation = useCallback(async () => {
+    if (!navigator.geolocation) {
+      toast({
+        title: "Geolocation not supported",
+        description: "Please enter your location manually",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsDetectingLocation(true);
     try {
       const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject);
+        const timeout = setTimeout(() => {
+          reject(new Error("Location detection timed out"));
+        }, 10000); // 10 second timeout
+
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            clearTimeout(timeout);
+            resolve(pos);
+          },
+          (err) => {
+            clearTimeout(timeout);
+            reject(err);
+          },
+          { timeout: 10000, enableHighAccuracy: false }
+        );
       });
 
       const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.coords.latitude}&lon=${position.coords.longitude}`
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.coords.latitude}&lon=${position.coords.longitude}`,
+        { signal: AbortSignal.timeout(10000) }
       );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch location data");
+      }
+
       const data = await response.json();
       const city = data.address?.city || data.address?.town || data.address?.village || "";
+      
+      if (!city) {
+        throw new Error("Could not determine city name");
+      }
+
       setLocation(city);
       toast({
         title: "Location detected",
         description: `Set to ${city}`,
       });
     } catch (error) {
+      console.error("Location detection error:", error);
+      const errorMessage = error instanceof GeolocationPositionError
+        ? error.code === 1
+          ? "Location permission denied. Please enter your location manually."
+          : "Unable to detect location. Please enter your location manually."
+        : "Location detection failed. Please enter your location manually.";
+      
       toast({
         title: "Location detection failed",
-        description: "Please enter your location manually",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -58,14 +99,61 @@ const Index = () => {
 
   const handleImageCapture = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImage(reader.result as string);
-        setResult(null);
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Invalid file type",
+        description: "Please select an image file (JPG, PNG, etc.)",
+        variant: "destructive",
+      });
+      // Reset input so user can try again
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+      return;
     }
+
+    // Validate file size (max 10MB)
+    const maxSize = 10 * 1024 * 1024;
+    if (file.size > maxSize) {
+      toast({
+        title: "File too large",
+        description: "Please select an image smaller than 10MB",
+        variant: "destructive",
+      });
+      // Reset input so user can try again
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+      return;
+    }
+
+    const reader = new FileReader();
+    
+    reader.onerror = () => {
+      toast({
+        title: "Failed to read file",
+        description: "Please try selecting the image again",
+        variant: "destructive",
+      });
+      // Reset input so user can try again
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    };
+    
+    reader.onloadend = () => {
+      setImage(reader.result as string);
+      setResult(null);
+      // Reset input so same file can be selected again if needed
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    };
+    
+    reader.readAsDataURL(file);
   };
 
   const handleExampleClick = (item: any) => {
@@ -97,7 +185,8 @@ const Index = () => {
       return;
     }
 
-    if (!location) {
+    const trimmedLocation = location.trim();
+    if (!trimmedLocation) {
       toast({
         title: "Location required",
         description: "Please set your location before analyzing",
@@ -105,25 +194,49 @@ const Index = () => {
       });
       return;
     }
+
+    // Prevent double submission
+    if (isAnalyzing) {
+      return;
+    }
     
     setIsAnalyzing(true);
-    setResult(null); // Clear previous result before new analysis
+    setResult(null);
+    
+    const timeout = setTimeout(() => {
+      if (isAnalyzing) {
+        toast({
+          title: "Taking longer than expected",
+          description: "Still analyzing, please wait...",
+        });
+      }
+    }, 15000); // Show message if it takes more than 15 seconds
     
     try {
-      console.log("Starting image analysis for location:", location);
+      console.log("Starting image analysis for location:", trimmedLocation);
       console.log("Image data length:", image.length);
       
       const { data, error } = await supabase.functions.invoke("classify-item", {
         body: { 
           image: image,
-          location: location.trim()
+          location: trimmedLocation.toLowerCase()
         },
       });
 
+      clearTimeout(timeout);
       console.log("Edge function response:", { data, error });
 
       if (error) {
         console.error("Edge function error:", error);
+        
+        // Handle specific error types
+        if (error.message?.includes("429") || error.message?.includes("rate limit")) {
+          throw new Error("Service is busy. Please try again in a moment.");
+        }
+        if (error.message?.includes("402") || error.message?.includes("payment")) {
+          throw new Error("Service temporarily unavailable. Please try again later.");
+        }
+        
         throw new Error(error.message || "Classification service error");
       }
 
@@ -137,6 +250,12 @@ const Index = () => {
         throw new Error("Invalid response from classification service");
       }
 
+      // Validate category
+      if (!["recyclable", "compostable", "trash"].includes(data.category)) {
+        console.error("Invalid category:", data.category);
+        throw new Error("Invalid classification category received");
+      }
+
       console.log("Classification successful:", data);
       setResult(data);
       
@@ -145,11 +264,16 @@ const Index = () => {
         description: `Item classified as ${data.category}`,
       });
     } catch (error) {
+      clearTimeout(timeout);
       console.error("Classification error:", error);
+      
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : "Could not classify the item. Please try again.";
       
       toast({
         title: "Analysis failed",
-        description: error instanceof Error ? error.message : "Could not classify the item. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
