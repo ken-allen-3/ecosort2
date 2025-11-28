@@ -109,9 +109,25 @@ serve(async (req) => {
   try {
     const { image, location } = await req.json();
     
-    if (!image) {
+    // Validate inputs
+    if (!image || typeof image !== 'string') {
       return new Response(
-        JSON.stringify({ error: "No image provided" }),
+        JSON.stringify({ error: "No valid image provided" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (!location || typeof location !== 'string' || location.trim().length === 0) {
+      return new Response(
+        JSON.stringify({ error: "Location is required" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Validate image data URL format
+    if (!image.startsWith('data:image/')) {
+      return new Response(
+        JSON.stringify({ error: "Invalid image format" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -234,17 +250,27 @@ Return a JSON object with:
 
     // Add municipal notes if available
     const itemLower = result.item.toLowerCase();
-    const locationKey = location.toLowerCase().trim();
+    const locationKey = (location || "default").toLowerCase().trim();
     const locationRules = municipalRules[locationKey] || municipalRules.default;
     
     console.log("Looking up rules for location:", locationKey);
     
+    // Find the most specific matching rule
+    let bestMatch = "";
+    let bestMatchLength = 0;
+    
     for (const [key, note] of Object.entries(locationRules)) {
-      if (itemLower.includes(key)) {
+      if (itemLower.includes(key) && key.length > bestMatchLength) {
         result.municipalNotes = note;
-        console.log("Found municipal note for:", key);
-        break;
+        bestMatch = key;
+        bestMatchLength = key.length;
       }
+    }
+    
+    if (bestMatch) {
+      console.log("Found municipal note for:", bestMatch);
+    } else {
+      console.log("No specific municipal note found, using general classification");
     }
 
     console.log("Returning final result:", result);
@@ -254,12 +280,26 @@ Return a JSON object with:
     });
   } catch (error) {
     console.error("Error in classify-item function:", error);
+    
+    // Provide more specific error messages
+    let errorMessage = "Unknown error occurred";
+    let statusCode = 500;
+    
+    if (error instanceof Error) {
+      errorMessage = error.message;
+      
+      // Check for specific error types
+      if (error.message.includes("JSON") || error.message.includes("parse")) {
+        errorMessage = "Failed to process the response. Please try again.";
+      } else if (error.message.includes("timeout") || error.message.includes("fetch")) {
+        errorMessage = "Network error. Please check your connection and try again.";
+      }
+    }
+    
     return new Response(
-      JSON.stringify({
-        error: error instanceof Error ? error.message : "Unknown error occurred",
-      }),
+      JSON.stringify({ error: errorMessage }),
       {
-        status: 500,
+        status: statusCode,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       }
     );

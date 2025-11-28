@@ -15,6 +15,12 @@ const LocationInput = ({
   isDetectingLocation,
   detectLocation,
 }: LocationInputProps) => {
+  const handleLocationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Prevent excessively long input
+    const value = e.target.value.slice(0, 100);
+    setLocation(value);
+  };
+
   return (
     <div className="space-y-2">
       <div className="flex gap-2">
@@ -22,8 +28,10 @@ const LocationInput = ({
           <Input
             placeholder="Enter your city (e.g., San Ramon, Long Beach)"
             value={location}
-            onChange={(e) => setLocation(e.target.value)}
+            onChange={handleLocationChange}
             className="w-full"
+            maxLength={100}
+            disabled={isDetectingLocation}
           />
         </div>
         <Button
@@ -42,7 +50,7 @@ const LocationInput = ({
       </div>
       {location && (
         <p className="text-xs text-muted-foreground">
-          Using disposal rules for {location}
+          Using disposal rules for {location.trim()}
         </p>
       )}
     </div>
