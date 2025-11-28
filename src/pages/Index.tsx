@@ -59,7 +59,12 @@ const Index = () => {
 
       const response = await fetch(
         `https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.coords.latitude}&lon=${position.coords.longitude}`,
-        { signal: AbortSignal.timeout(10000) }
+        { 
+          signal: AbortSignal.timeout(10000),
+          headers: {
+            'User-Agent': 'EcoSort-Waste-App/1.0'
+          }
+        }
       );
 
       if (!response.ok) {
