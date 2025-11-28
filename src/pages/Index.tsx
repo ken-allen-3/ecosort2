@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import ResultCard from "@/components/ResultCard";
+import ResultModal from "@/components/ResultModal";
 import LocationInput from "@/components/LocationInput";
 import AnalysisDebugger from "@/components/AnalysisDebugger";
 import WelcomeOverlay from "@/components/WelcomeOverlay";
@@ -267,12 +267,23 @@ const Index = () => {
           </div>
         </Card>
 
-        {result && <ResultCard result={result} />}
-
-        <div className="mt-8 text-center text-sm text-muted-foreground">
-          <p>Help reduce contamination in recycling and composting streams</p>
-        </div>
+        {!result && (
+          <div className="mt-8 text-center text-sm text-muted-foreground">
+            <p>Help reduce contamination in recycling and composting streams</p>
+          </div>
+        )}
       </main>
+
+      {result && (
+        <ResultModal
+          result={result}
+          location={location}
+          onClose={() => {
+            setResult(null);
+            setImage(null);
+          }}
+        />
+      )}
     </div>
   );
 };
