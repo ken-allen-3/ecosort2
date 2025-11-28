@@ -1,7 +1,6 @@
 import { MapPin, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 
 interface LocationInputProps {
   location: string;
@@ -17,7 +16,7 @@ const LocationInput = ({
   detectLocation,
 }: LocationInputProps) => {
   return (
-    <Card className="p-4 mb-6">
+    <div className="space-y-2">
       <div className="flex gap-2">
         <div className="flex-1">
           <Input
@@ -41,13 +40,12 @@ const LocationInput = ({
           )}
         </Button>
       </div>
-      <p className="text-xs text-muted-foreground mt-2">
-        {location 
-          ? `Using disposal rules for ${location}` 
-          : "Location helps us provide accurate local disposal guidelines"
-        }
-      </p>
-    </Card>
+      {location && (
+        <p className="text-xs text-muted-foreground">
+          Using disposal rules for {location}
+        </p>
+      )}
+    </div>
   );
 };
 
