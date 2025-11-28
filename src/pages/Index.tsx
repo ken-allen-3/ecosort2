@@ -78,29 +78,25 @@ const Index = () => {
         );
       });
 
-      console.log("📍 Fetching city name from Nominatim...");
-      const nominatimUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.coords.latitude}&lon=${position.coords.longitude}`;
-      console.log("📍 Nominatim URL:", nominatimUrl);
+      console.log("📍 Fetching city name via backend...");
       
-      const response = await fetch(nominatimUrl, { 
-        signal: AbortSignal.timeout(10000),
-        headers: {
-          'User-Agent': 'EcoSort-Waste-App/1.0'
+      const { data, error: geocodeError } = await supabase.functions.invoke('reverse-geocode', {
+        body: { 
+          latitude: position.coords.latitude, 
+          longitude: position.coords.longitude 
         }
       });
-
-      console.log("📍 Nominatim response status:", response.status, response.statusText);
       
-      if (!response.ok) {
-        console.error("❌ Nominatim request failed:", {
-          status: response.status,
-          statusText: response.statusText
-        });
-        throw new Error(`Failed to fetch location data: ${response.status} ${response.statusText}`);
+      console.log("📍 Backend response:", data);
+      
+      if (geocodeError) {
+        console.error("❌ Reverse geocode error:", geocodeError);
+        throw new Error(`Failed to fetch location data: ${geocodeError.message}`);
       }
-
-      const data = await response.json();
-      console.log("📍 Nominatim data:", JSON.stringify(data, null, 2));
+      
+      if (!data) {
+        throw new Error('No data received from reverse geocode');
+      }
       
       const city = data.address?.city || data.address?.town || data.address?.village || "";
       console.log("📍 Extracted city:", city);
