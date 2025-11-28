@@ -71,7 +71,9 @@ const ResultModal = ({ result, location, onClose }: ResultModalProps) => {
               <h3 className="text-3xl font-bold mb-2">{config.title}</h3>
               <p className="text-xl text-muted-foreground mb-2">{result.item}</p>
               <div className="inline-flex items-center gap-2 text-sm text-muted-foreground">
-                <span className="font-medium">{result.confidence}% confidence</span>
+                <span className="font-medium">
+                  {result.confidence > 1 ? result.confidence : (result.confidence * 100).toFixed(0)}% confidence
+                </span>
               </div>
             </Card>
 
