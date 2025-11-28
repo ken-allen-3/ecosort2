@@ -27,18 +27,47 @@ const Index = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
+  const tryIPBasedLocation = async () => {
+    try {
+      console.log("📍 Attempting IP-based geolocation fallback...");
+      
+      const { data, error } = await supabase.functions.invoke('ip-geolocation');
+      
+      if (error || !data?.city) {
+        throw new Error("IP-based location failed");
+      }
+
+      console.log("✅ IP-based location detected:", data.city);
+      setLocation(data.city);
+      toast({
+        title: "Location detected",
+        description: `Using disposal rules for ${data.city} (approximate location)`,
+      });
+      return true;
+    } catch (error) {
+      console.error("❌ IP-based location failed:", error);
+      return false;
+    }
+  };
+
   const detectLocation = useCallback(async () => {
     console.log("🔍 Location detection started");
     console.log("📍 Protocol:", window.location.protocol);
     console.log("📍 Is HTTPS:", window.location.protocol === 'https:');
     
     if (!navigator.geolocation) {
-      console.error("❌ Geolocation API not available");
-      toast({
-        title: "Geolocation not supported",
-        description: "Please enter your location manually",
-        variant: "destructive",
-      });
+      console.error("❌ Geolocation API not available, trying IP-based fallback");
+      setIsDetectingLocation(true);
+      const success = await tryIPBasedLocation();
+      setIsDetectingLocation(false);
+      
+      if (!success) {
+        toast({
+          title: "Location detection failed",
+          description: "Please enter your location manually",
+          variant: "destructive",
+        });
+      }
       return;
     }
 
@@ -114,38 +143,29 @@ const Index = () => {
         description: `Set to ${city}`,
       });
     } catch (error) {
-      console.error("❌ Location detection error:", error);
+      console.error("❌ GPS location detection failed, trying IP-based fallback");
       
-      let errorMessage = "Location detection failed. Please enter your location manually.";
-      let errorDetails = "";
+      const success = await tryIPBasedLocation();
       
-      if (error instanceof GeolocationPositionError) {
-        console.log("📍 GeolocationPositionError details:", {
-          code: error.code,
-          message: error.message
-        });
+      if (!success) {
+        let errorMessage = "Location detection failed. Please enter your location manually.";
         
-        if (error.code === 1) {
-          errorMessage = "Location permission denied. Please enter your location manually.";
-          errorDetails = "User denied permission or browser blocked access";
-        } else if (error.code === 2) {
-          errorMessage = "Unable to detect location. Please enter your location manually.";
-          errorDetails = "Position unavailable";
-        } else if (error.code === 3) {
-          errorMessage = "Location detection timed out. Please enter your location manually.";
-          errorDetails = "Timeout";
+        if (error instanceof GeolocationPositionError) {
+          if (error.code === 1) {
+            errorMessage = "Location permission denied. Please enter your location manually.";
+          } else if (error.code === 2) {
+            errorMessage = "Unable to detect location. Please enter your location manually.";
+          } else if (error.code === 3) {
+            errorMessage = "Location detection timed out. Please enter your location manually.";
+          }
         }
-      } else if (error instanceof Error) {
-        errorDetails = error.message;
+        
+        toast({
+          title: "Location detection failed",
+          description: errorMessage,
+          variant: "destructive",
+        });
       }
-      
-      console.log("📍 Error summary:", { errorMessage, errorDetails });
-      
-      toast({
-        title: "Location detection failed",
-        description: errorMessage,
-        variant: "destructive",
-      });
     } finally {
       setIsDetectingLocation(false);
       console.log("🔍 Location detection completed");
