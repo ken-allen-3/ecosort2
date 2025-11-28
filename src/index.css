@@ -111,5 +111,39 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    /* Ensure proper rendering across browsers */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Ensure touch-friendly tap targets on mobile */
+  button,
+  a,
+  input,
+  select,
+  textarea {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+    touch-action: manipulation;
+  }
+
+  /* Fix iOS Safari input zoom */
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+
+  /* Prevent iOS Safari from resizing text */
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  /* Ensure images are properly contained */
+  img {
+    max-width: 100%;
+    height: auto;
+    display: block;
   }
 }

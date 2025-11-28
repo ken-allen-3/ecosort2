@@ -32,6 +32,8 @@ const LocationInput = ({
             className="w-full"
             maxLength={100}
             disabled={isDetectingLocation}
+            aria-label="Enter your city location"
+            autoComplete="address-level2"
           />
         </div>
         <Button
@@ -40,16 +42,18 @@ const LocationInput = ({
           onClick={detectLocation}
           disabled={isDetectingLocation}
           title="Detect my location"
+          aria-label="Detect my location automatically"
+          type="button"
         >
           {isDetectingLocation ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
+            <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
           ) : (
-            <MapPin className="h-4 w-4" />
+            <MapPin className="h-4 w-4" aria-hidden="true" />
           )}
         </Button>
       </div>
       {location && (
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-muted-foreground" role="status" aria-live="polite">
           Using disposal rules for {location.trim()}
         </p>
       )}
