@@ -8,42 +8,42 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 25 85% 80%;
-    --foreground: 180 45% 20%;
+    --background: 145 20% 98%;
+    --foreground: 145 12% 15%;
 
-    --card: 30 90% 92%;
-    --card-foreground: 180 45% 20%;
+    --card: 0 0% 100%;
+    --card-foreground: 145 12% 15%;
 
-    --popover: 30 90% 92%;
-    --popover-foreground: 180 45% 20%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 145 12% 15%;
 
-    --primary: 180 55% 35%;
+    --primary: 145 63% 42%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 90 60% 65%;
-    --secondary-foreground: 180 45% 20%;
+    --secondary: 145 20% 92%;
+    --secondary-foreground: 145 12% 15%;
 
-    --muted: 25 70% 88%;
-    --muted-foreground: 180 35% 40%;
+    --muted: 145 20% 92%;
+    --muted-foreground: 145 12% 45%;
 
-    --accent: 90 60% 65%;
-    --accent-foreground: 180 45% 20%;
+    --accent: 145 63% 42%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 25 60% 75%;
-    --input: 30 70% 85%;
-    --ring: 90 60% 65%;
+    --border: 145 20% 88%;
+    --input: 145 20% 88%;
+    --ring: 145 63% 42%;
 
-    --radius: 1.25rem;
+    --radius: 0.75rem;
 
     /* Category colors */
-    --recyclable: 210 70% 55%;
+    --recyclable: 210 100% 50%;
     --recyclable-foreground: 0 0% 100%;
-    --compostable: 90 60% 55%;
-    --compostable-foreground: 180 45% 20%;
-    --trash: 0 5% 50%;
+    --compostable: 145 63% 42%;
+    --compostable-foreground: 0 0% 100%;
+    --trash: 0 0% 45%;
     --trash-foreground: 0 0% 100%;
 
     --sidebar-background: 0 0% 98%;
@@ -57,40 +57,40 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --background: 180 40% 12%;
-    --foreground: 25 70% 85%;
+    --background: 145 15% 8%;
+    --foreground: 145 10% 95%;
 
-    --card: 180 35% 15%;
-    --card-foreground: 25 70% 85%;
+    --card: 145 15% 10%;
+    --card-foreground: 145 10% 95%;
 
-    --popover: 180 35% 15%;
-    --popover-foreground: 25 70% 85%;
+    --popover: 145 15% 10%;
+    --popover-foreground: 145 10% 95%;
 
-    --primary: 180 55% 45%;
+    --primary: 145 63% 42%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 90 50% 50%;
-    --secondary-foreground: 180 40% 12%;
+    --secondary: 145 15% 15%;
+    --secondary-foreground: 145 10% 95%;
 
-    --muted: 180 30% 20%;
-    --muted-foreground: 25 40% 65%;
+    --muted: 145 15% 15%;
+    --muted-foreground: 145 10% 65%;
 
-    --accent: 90 50% 50%;
-    --accent-foreground: 180 40% 12%;
+    --accent: 145 63% 42%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 62.8% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 180 30% 25%;
-    --input: 180 30% 20%;
-    --ring: 90 50% 50%;
+    --border: 145 15% 20%;
+    --input: 145 15% 20%;
+    --ring: 145 63% 42%;
 
     /* Category colors */
-    --recyclable: 210 70% 55%;
+    --recyclable: 210 100% 50%;
     --recyclable-foreground: 0 0% 100%;
-    --compostable: 90 60% 55%;
-    --compostable-foreground: 180 45% 20%;
-    --trash: 0 5% 50%;
+    --compostable: 145 63% 42%;
+    --compostable-foreground: 0 0% 100%;
+    --trash: 0 0% 55%;
     --trash-foreground: 0 0% 100%;
 
     --sidebar-background: 240 5.9% 10%;
