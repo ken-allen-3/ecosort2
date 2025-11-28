@@ -138,8 +138,11 @@ Return a JSON object with:
 
     const content = aiData.choices?.[0]?.message?.content;
     if (!content) {
+      console.error("No content in AI response");
       throw new Error("No response from AI");
     }
+
+    console.log("Raw AI content:", content);
 
     // Strip markdown code blocks if present
     let jsonString = content.trim();
@@ -149,20 +152,42 @@ Return a JSON object with:
       jsonString = jsonString.replace(/^```\s*\n?/, "").replace(/\n?```\s*$/, "");
     }
 
-    // Parse the JSON response
-    const result = JSON.parse(jsonString);
+    console.log("Cleaned JSON string:", jsonString);
+
+    // Parse the JSON response with error handling
+    let result;
+    try {
+      result = JSON.parse(jsonString);
+    } catch (parseError) {
+      console.error("JSON parse error:", parseError);
+      console.error("Failed to parse:", jsonString);
+      throw new Error("Invalid response format from AI");
+    }
+    
     console.log("Parsed classification:", result);
+
+    // Validate result structure
+    if (!result.category || !result.item) {
+      console.error("Missing required fields in result:", result);
+      throw new Error("Incomplete classification result");
+    }
 
     // Add municipal notes if available
     const itemLower = result.item.toLowerCase();
-    const locationRules = municipalRules[location.toLowerCase()] || municipalRules.default;
+    const locationKey = location.toLowerCase().trim();
+    const locationRules = municipalRules[locationKey] || municipalRules.default;
+    
+    console.log("Looking up rules for location:", locationKey);
     
     for (const [key, note] of Object.entries(locationRules)) {
       if (itemLower.includes(key)) {
         result.municipalNotes = note;
+        console.log("Found municipal note for:", key);
         break;
       }
     }
+
+    console.log("Returning final result:", result);
 
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
