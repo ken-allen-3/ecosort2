@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import ResultCard from "@/components/ResultCard";
 import LocationInput from "@/components/LocationInput";
+import AnalysisDebugger from "@/components/AnalysisDebugger";
 
 interface ClassificationResult {
   category: "recyclable" | "compostable" | "trash";
@@ -65,26 +66,55 @@ const Index = () => {
   };
 
   const analyzeImage = async () => {
-    if (!image) return;
+    if (!image) {
+      toast({
+        title: "No image",
+        description: "Please take or upload a photo first",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!location) {
+      toast({
+        title: "Location required",
+        description: "Please set your location before analyzing",
+        variant: "destructive",
+      });
+      return;
+    }
     
     setIsAnalyzing(true);
+    
     try {
       console.log("Starting image analysis for location:", location);
+      console.log("Image data length:", image.length);
       
       const { data, error } = await supabase.functions.invoke("classify-item", {
-        body: { image, location },
+        body: { 
+          image: image,
+          location: location.trim()
+        },
       });
+
+      console.log("Edge function response:", { data, error });
 
       if (error) {
         console.error("Edge function error:", error);
-        throw error;
+        throw new Error(error.message || "Classification service error");
       }
 
       if (!data) {
         throw new Error("No response from classification service");
       }
 
-      console.log("Classification result:", data);
+      // Validate response structure
+      if (!data.category || !data.item) {
+        console.error("Invalid response structure:", data);
+        throw new Error("Invalid response from classification service");
+      }
+
+      console.log("Classification successful:", data);
       setResult(data);
       
       toast({
@@ -93,6 +123,10 @@ const Index = () => {
       });
     } catch (error) {
       console.error("Classification error:", error);
+      
+      // Reset image state on error to prevent stuck state
+      setResult(null);
+      
       toast({
         title: "Analysis failed",
         description: error instanceof Error ? error.message : "Could not classify the item. Please try again.",
@@ -113,6 +147,12 @@ const Index = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8 max-w-2xl">
+        <AnalysisDebugger 
+          image={image}
+          location={location}
+          isAnalyzing={isAnalyzing}
+        />
+        
         <LocationInput
           location={location}
           setLocation={setLocation}
