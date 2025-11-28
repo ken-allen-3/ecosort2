@@ -6,7 +6,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import ResultModal from "@/components/ResultModal";
 import LocationInput from "@/components/LocationInput";
-import AnalysisDebugger from "@/components/AnalysisDebugger";
 import WelcomeOverlay from "@/components/WelcomeOverlay";
 import ExampleImages from "@/components/ExampleImages";
 import AnalysisLoading from "@/components/AnalysisLoading";
@@ -286,28 +285,22 @@ const Index = () => {
       <WelcomeOverlay />
       
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4">
-          <h1 className="text-2xl font-bold text-foreground">EcoSort</h1>
-          <p className="text-sm text-muted-foreground">Smart waste classification</p>
+        <div className="container mx-auto px-4 py-3 sm:py-4">
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">EcoSort</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground">Smart waste classification</p>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8 max-w-2xl">
-        <AnalysisDebugger 
-          image={image}
-          location={location}
-          isAnalyzing={isAnalyzing}
-        />
-        
-        <Card className="p-6 mb-6 bg-primary/5 border-primary/20">
+      <main className="container mx-auto px-4 py-6 max-w-2xl space-y-4">
+        <Card className="p-4 sm:p-6 bg-primary/5 border-primary/20">
           <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-1">
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
               <MapPin className="w-5 h-5 text-primary" />
             </div>
-            <div className="flex-1">
-              <h3 className="font-semibold mb-1">Your Location</h3>
-              <p className="text-sm text-muted-foreground mb-3">
-                Set your location to get accurate local disposal rules
+            <div className="flex-1 min-w-0">
+              <h3 className="font-semibold mb-1 text-sm sm:text-base">Your Location</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground mb-3">
+                Set your location for accurate local rules
               </p>
               <LocationInput
                 location={location}
@@ -321,15 +314,15 @@ const Index = () => {
 
         {!image && !result && <ExampleImages onExampleClick={handleExampleClick} />}
 
-        <Card className="p-6 mb-6">
+        <Card className="p-4 sm:p-6">
           <div className="space-y-4">
             {!image ? (
-              <div className="text-center space-y-4">
-                <div className="w-32 h-32 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
-                  <Camera className="w-16 h-16 text-primary" />
+              <div className="text-center space-y-4 py-4">
+                <div className="w-24 h-24 sm:w-32 sm:h-32 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
+                  <Camera className="w-12 h-12 sm:w-16 sm:h-16 text-primary" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-semibold mb-2">Ready to scan</h2>
+                  <h2 className="text-lg sm:text-xl font-semibold mb-2">Ready to scan</h2>
                   <p className="text-muted-foreground text-sm">
                     Point your camera at any item to get instant disposal guidance
                   </p>
@@ -345,7 +338,7 @@ const Index = () => {
                 <Button
                   size="lg"
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-full"
+                  className="w-full sm:w-auto min-h-[48px]"
                 >
                   <Camera className="mr-2 h-5 w-5" />
                   Take Photo
@@ -353,8 +346,12 @@ const Index = () => {
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="relative rounded-lg overflow-hidden">
-                  <img src={image} alt="Captured item" className="w-full h-auto" />
+                <div className="relative rounded-lg overflow-hidden max-h-[60vh]">
+                  <img 
+                    src={image} 
+                    alt="Captured item" 
+                    className="w-full h-auto object-contain"
+                  />
                 </div>
                 <div className="flex gap-2">
                   <Button
@@ -363,14 +360,14 @@ const Index = () => {
                       setImage(null);
                       setResult(null);
                     }}
-                    className="flex-1"
+                    className="flex-1 min-h-[48px]"
                   >
                     Retake
                   </Button>
                   <Button
                     onClick={analyzeImage}
                     disabled={isAnalyzing || !location}
-                    className="flex-1"
+                    className="flex-1 min-h-[48px]"
                   >
                     {isAnalyzing ? (
                       <>
@@ -393,7 +390,7 @@ const Index = () => {
         </Card>
 
         {!result && (
-          <div className="mt-8 text-center text-sm text-muted-foreground">
+          <div className="text-center text-xs sm:text-sm text-muted-foreground px-4">
             <p>Help reduce contamination in recycling and composting streams</p>
           </div>
         )}
