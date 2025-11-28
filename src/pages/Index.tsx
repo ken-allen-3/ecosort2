@@ -28,7 +28,12 @@ const Index = () => {
   const { toast } = useToast();
 
   const detectLocation = useCallback(async () => {
+    console.log("🔍 Location detection started");
+    console.log("📍 Protocol:", window.location.protocol);
+    console.log("📍 Is HTTPS:", window.location.protocol === 'https:');
+    
     if (!navigator.geolocation) {
+      console.error("❌ Geolocation API not available");
       toast({
         title: "Geolocation not supported",
         description: "Please enter your location manually",
@@ -37,59 +42,108 @@ const Index = () => {
       return;
     }
 
+    console.log("✅ Geolocation API available");
     setIsDetectingLocation(true);
+    
     try {
+      console.log("📍 Requesting position from browser...");
       const position = await new Promise<GeolocationPosition>((resolve, reject) => {
         const timeout = setTimeout(() => {
+          console.error("❌ Position request timed out after 10s");
           reject(new Error("Location detection timed out"));
-        }, 10000); // 10 second timeout
+        }, 10000);
 
         navigator.geolocation.getCurrentPosition(
           (pos) => {
             clearTimeout(timeout);
+            console.log("✅ Position received:", {
+              lat: pos.coords.latitude,
+              lon: pos.coords.longitude,
+              accuracy: pos.coords.accuracy
+            });
             resolve(pos);
           },
           (err) => {
             clearTimeout(timeout);
+            console.error("❌ Geolocation error:", {
+              code: err.code,
+              message: err.message,
+              PERMISSION_DENIED: err.code === 1,
+              POSITION_UNAVAILABLE: err.code === 2,
+              TIMEOUT: err.code === 3
+            });
             reject(err);
           },
           { timeout: 10000, enableHighAccuracy: false }
         );
       });
 
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.coords.latitude}&lon=${position.coords.longitude}`,
-        { 
-          signal: AbortSignal.timeout(10000),
-          headers: {
-            'User-Agent': 'EcoSort-Waste-App/1.0'
-          }
+      console.log("📍 Fetching city name from Nominatim...");
+      const nominatimUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.coords.latitude}&lon=${position.coords.longitude}`;
+      console.log("📍 Nominatim URL:", nominatimUrl);
+      
+      const response = await fetch(nominatimUrl, { 
+        signal: AbortSignal.timeout(10000),
+        headers: {
+          'User-Agent': 'EcoSort-Waste-App/1.0'
         }
-      );
+      });
 
+      console.log("📍 Nominatim response status:", response.status, response.statusText);
+      
       if (!response.ok) {
-        throw new Error("Failed to fetch location data");
+        console.error("❌ Nominatim request failed:", {
+          status: response.status,
+          statusText: response.statusText
+        });
+        throw new Error(`Failed to fetch location data: ${response.status} ${response.statusText}`);
       }
 
       const data = await response.json();
+      console.log("📍 Nominatim data:", JSON.stringify(data, null, 2));
+      
       const city = data.address?.city || data.address?.town || data.address?.village || "";
+      console.log("📍 Extracted city:", city);
       
       if (!city) {
+        console.error("❌ Could not extract city from response");
         throw new Error("Could not determine city name");
       }
 
       setLocation(city);
+      console.log("✅ Location set successfully:", city);
+      
       toast({
         title: "Location detected",
         description: `Set to ${city}`,
       });
     } catch (error) {
-      console.error("Location detection error:", error);
-      const errorMessage = error instanceof GeolocationPositionError
-        ? error.code === 1
-          ? "Location permission denied. Please enter your location manually."
-          : "Unable to detect location. Please enter your location manually."
-        : "Location detection failed. Please enter your location manually.";
+      console.error("❌ Location detection error:", error);
+      
+      let errorMessage = "Location detection failed. Please enter your location manually.";
+      let errorDetails = "";
+      
+      if (error instanceof GeolocationPositionError) {
+        console.log("📍 GeolocationPositionError details:", {
+          code: error.code,
+          message: error.message
+        });
+        
+        if (error.code === 1) {
+          errorMessage = "Location permission denied. Please enter your location manually.";
+          errorDetails = "User denied permission or browser blocked access";
+        } else if (error.code === 2) {
+          errorMessage = "Unable to detect location. Please enter your location manually.";
+          errorDetails = "Position unavailable";
+        } else if (error.code === 3) {
+          errorMessage = "Location detection timed out. Please enter your location manually.";
+          errorDetails = "Timeout";
+        }
+      } else if (error instanceof Error) {
+        errorDetails = error.message;
+      }
+      
+      console.log("📍 Error summary:", { errorMessage, errorDetails });
       
       toast({
         title: "Location detection failed",
@@ -98,6 +152,7 @@ const Index = () => {
       });
     } finally {
       setIsDetectingLocation(false);
+      console.log("🔍 Location detection completed");
     }
   }, [toast]);
 
