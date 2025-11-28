@@ -47,6 +47,18 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        recyclable: {
+          DEFAULT: "hsl(var(--recyclable))",
+          foreground: "hsl(var(--recyclable-foreground))",
+        },
+        compostable: {
+          DEFAULT: "hsl(var(--compostable))",
+          foreground: "hsl(var(--compostable-foreground))",
+        },
+        trash: {
+          DEFAULT: "hsl(var(--trash))",
+          foreground: "hsl(var(--trash-foreground))",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
