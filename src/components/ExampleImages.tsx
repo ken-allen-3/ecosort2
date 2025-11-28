@@ -57,27 +57,27 @@ const ExampleImages = ({ onExampleClick }: ExampleImagesProps) => {
   };
 
   return (
-    <div className="mb-6">
-      <h3 className="text-sm font-medium text-muted-foreground mb-3 text-center">
+    <div className="mb-4 sm:mb-6">
+      <h3 className="text-xs sm:text-sm font-medium text-muted-foreground mb-3 text-center">
         Try these examples
       </h3>
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-2 sm:gap-3">
         {examples.map((item) => (
           <Card
             key={item.name}
-            className="p-4 cursor-pointer hover:shadow-lg transition-all hover-scale"
+            className="p-3 sm:p-4 cursor-pointer hover:shadow-lg transition-all hover-scale active:scale-95"
             onClick={() => onExampleClick(item)}
           >
-            <div className="text-center space-y-2">
-              <div className="text-4xl mb-2">{item.emoji}</div>
-              <p className="text-xs font-medium">{item.name}</p>
+            <div className="text-center space-y-1.5 sm:space-y-2">
+              <div className="text-3xl sm:text-4xl mb-1 sm:mb-2">{item.emoji}</div>
+              <p className="text-[10px] sm:text-xs font-medium leading-tight">{item.name}</p>
               <div
-                className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs border ${getCategoryColor(
+                className={`inline-flex items-center gap-1 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs border ${getCategoryColor(
                   item.category
                 )}`}
               >
                 {getCategoryIcon(item.category)}
-                {item.category}
+                <span className="hidden sm:inline">{item.category}</span>
               </div>
             </div>
           </Card>

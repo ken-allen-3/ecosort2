@@ -52,9 +52,9 @@ const ResultModal = ({ result, location, onClose }: ResultModalProps) => {
       <div className="h-full flex flex-col">
         {/* Header */}
         <div className="border-b border-border bg-card/50 backdrop-blur-sm">
-          <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-            <h2 className="text-xl font-bold">Analysis Result</h2>
-            <Button variant="ghost" size="icon" onClick={onClose}>
+          <div className="container mx-auto px-4 py-3 sm:py-4 flex items-center justify-between">
+            <h2 className="text-lg sm:text-xl font-bold">Analysis Result</h2>
+            <Button variant="ghost" size="icon" onClick={onClose} className="min-h-[44px] min-w-[44px]">
               <X className="w-5 h-5" />
             </Button>
           </div>
@@ -62,7 +62,7 @@ const ResultModal = ({ result, location, onClose }: ResultModalProps) => {
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto">
-          <div className="container mx-auto px-4 py-8 max-w-2xl space-y-6">
+          <div className="container mx-auto px-4 py-6 sm:py-8 max-w-2xl space-y-4 sm:space-y-6">
             {/* Category Badge */}
             <Card className={`p-8 text-center border-2 ${config.borderColor} ${config.bgColor}`}>
               <div className={`w-24 h-24 mx-auto rounded-full ${config.bgColor} flex items-center justify-center mb-4`}>
@@ -96,11 +96,11 @@ const ResultModal = ({ result, location, onClose }: ResultModalProps) => {
             )}
 
             {/* Action Buttons */}
-            <div className="space-y-3 pt-4">
-              <Button onClick={onClose} className="w-full" size="lg">
+            <div className="space-y-3 pt-2 sm:pt-4">
+              <Button onClick={onClose} className="w-full min-h-[48px]" size="lg">
                 Analyze Another Item
               </Button>
-              <p className="text-center text-sm text-muted-foreground">
+              <p className="text-center text-xs sm:text-sm text-muted-foreground">
                 Help reduce contamination in recycling streams
               </p>
             </div>
