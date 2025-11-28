@@ -1,0 +1,50 @@
+import { MapPin, Loader2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+
+interface LocationInputProps {
+  location: string;
+  setLocation: (location: string) => void;
+  isDetectingLocation: boolean;
+  detectLocation: () => void;
+}
+
+const LocationInput = ({
+  location,
+  setLocation,
+  isDetectingLocation,
+  detectLocation,
+}: LocationInputProps) => {
+  return (
+    <Card className="p-4 mb-6">
+      <div className="flex gap-2">
+        <div className="flex-1">
+          <Input
+            placeholder="Enter your city"
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+            className="w-full"
+          />
+        </div>
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={detectLocation}
+          disabled={isDetectingLocation}
+        >
+          {isDetectingLocation ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <MapPin className="h-4 w-4" />
+          )}
+        </Button>
+      </div>
+      <p className="text-xs text-muted-foreground mt-2">
+        Location helps us provide accurate local disposal guidelines
+      </p>
+    </Card>
+  );
+};
+
+export default LocationInput;
