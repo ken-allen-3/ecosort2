@@ -21,7 +21,7 @@ const LocationInput = ({
       <div className="flex gap-2">
         <div className="flex-1">
           <Input
-            placeholder="Enter your city"
+            placeholder="Enter your city (e.g., San Ramon, Long Beach)"
             value={location}
             onChange={(e) => setLocation(e.target.value)}
             className="w-full"
@@ -32,6 +32,7 @@ const LocationInput = ({
           size="icon"
           onClick={detectLocation}
           disabled={isDetectingLocation}
+          title="Detect my location"
         >
           {isDetectingLocation ? (
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -41,7 +42,10 @@ const LocationInput = ({
         </Button>
       </div>
       <p className="text-xs text-muted-foreground mt-2">
-        Location helps us provide accurate local disposal guidelines
+        {location 
+          ? `Using disposal rules for ${location}` 
+          : "Location helps us provide accurate local disposal guidelines"
+        }
       </p>
     </Card>
   );

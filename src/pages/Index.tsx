@@ -69,18 +69,33 @@ const Index = () => {
     
     setIsAnalyzing(true);
     try {
+      console.log("Starting image analysis for location:", location);
+      
       const { data, error } = await supabase.functions.invoke("classify-item", {
         body: { image, location },
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Edge function error:", error);
+        throw error;
+      }
 
+      if (!data) {
+        throw new Error("No response from classification service");
+      }
+
+      console.log("Classification result:", data);
       setResult(data);
+      
+      toast({
+        title: "Analysis complete",
+        description: `Item classified as ${data.category}`,
+      });
     } catch (error) {
       console.error("Classification error:", error);
       toast({
         title: "Analysis failed",
-        description: "Could not classify the item. Please try again.",
+        description: error instanceof Error ? error.message : "Could not classify the item. Please try again.",
         variant: "destructive",
       });
     } finally {

@@ -48,13 +48,25 @@ serve(async (req) => {
 
   try {
     const { image, location } = await req.json();
+    
+    if (!image) {
+      return new Response(
+        JSON.stringify({ error: "No image provided" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 
     if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY not configured");
+      console.error("LOVABLE_API_KEY not configured");
+      return new Response(
+        JSON.stringify({ error: "AI service not configured" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
-    console.log("Classifying item for location:", location);
+    console.log("Classifying item for location:", location || "default");
 
     // Call Lovable AI with vision model
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -103,6 +115,21 @@ Return a JSON object with:
     if (!response.ok) {
       const errorText = await response.text();
       console.error("AI API error:", response.status, errorText);
+      
+      if (response.status === 429) {
+        return new Response(
+          JSON.stringify({ error: "Rate limit exceeded. Please try again in a moment." }),
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      
+      if (response.status === 402) {
+        return new Response(
+          JSON.stringify({ error: "AI service payment required. Please contact support." }),
+          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      
       throw new Error(`AI classification failed: ${response.status}`);
     }
 
