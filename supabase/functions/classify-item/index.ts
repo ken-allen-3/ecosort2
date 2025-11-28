@@ -141,8 +141,17 @@ Return a JSON object with:
       throw new Error("No response from AI");
     }
 
+    // Strip markdown code blocks if present
+    let jsonString = content.trim();
+    if (jsonString.startsWith("```json")) {
+      jsonString = jsonString.replace(/^```json\s*\n?/, "").replace(/\n?```\s*$/, "");
+    } else if (jsonString.startsWith("```")) {
+      jsonString = jsonString.replace(/^```\s*\n?/, "").replace(/\n?```\s*$/, "");
+    }
+
     // Parse the JSON response
-    const result = JSON.parse(content);
+    const result = JSON.parse(jsonString);
+    console.log("Parsed classification:", result);
 
     // Add municipal notes if available
     const itemLower = result.item.toLowerCase();
