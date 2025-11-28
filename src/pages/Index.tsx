@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { Camera, MapPin, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -9,6 +9,7 @@ import LocationInput from "@/components/LocationInput";
 import WelcomeOverlay from "@/components/WelcomeOverlay";
 import ExampleImages from "@/components/ExampleImages";
 import AnalysisLoading from "@/components/AnalysisLoading";
+import { checkBrowserCompatibility, getBrowserInfo } from "@/lib/browserCompat";
 
 interface ClassificationResult {
   category: "recyclable" | "compostable" | "trash";
@@ -26,6 +27,23 @@ const Index = () => {
   const [isDetectingLocation, setIsDetectingLocation] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+
+  // Check browser compatibility on mount
+  useEffect(() => {
+    const compat = checkBrowserCompatibility();
+    const browserInfo = getBrowserInfo();
+    
+    console.log('Browser info:', browserInfo);
+    console.log('Browser compatibility:', compat);
+    
+    if (!compat.isCompatible) {
+      toast({
+        title: "Browser compatibility issue",
+        description: `Some features may not work properly. Please update your browser. Issues: ${compat.issues.join(', ')}`,
+        variant: "destructive",
+      });
+    }
+  }, [toast]);
 
   const tryIPBasedLocation = async () => {
     try {
@@ -175,6 +193,16 @@ const Index = () => {
   const handleImageCapture = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    // Check FileReader support
+    if (!window.FileReader) {
+      toast({
+        title: "Browser not supported",
+        description: "Your browser doesn't support file reading. Please update your browser.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
@@ -406,10 +434,11 @@ const Index = () => {
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept="image/*"
+                  accept="image/*,image/jpeg,image/jpg,image/png,image/webp,image/heic"
                   capture="environment"
                   onChange={handleImageCapture}
                   className="hidden"
+                  aria-label="Capture or upload image"
                 />
                 <Button
                   size="lg"
