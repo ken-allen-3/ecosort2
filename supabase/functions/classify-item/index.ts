@@ -13,6 +13,32 @@ const municipalRules: Record<string, Record<string, string>> = {
     "glass bottle": "Rinse before recycling. Remove caps.",
     "food scraps": "Suitable for composting if your city has a program.",
   },
+  "san ramon": {
+    "pizza box": "Accepted in organics cart even if greasy. Remove any plastic liners first.",
+    "plastic bag": "Not accepted in blue recycling cart. Take to participating grocery stores for recycling.",
+    "glass bottle": "Place in blue recycling cart. Rinse and remove caps. No broken glass.",
+    "food scraps": "Place in green organics cart. Includes all food waste, meat, dairy, and bones.",
+    "cardboard": "Flatten and place in blue recycling cart. Remove tape and labels when possible.",
+    "styrofoam": "Not recyclable. Place in black trash cart.",
+    "plastic container": "Only #1-5 and #7 plastics accepted. Rinse clean and remove lids.",
+    "yard waste": "Place in green organics cart. No plastic bags - use paper yard waste bags only.",
+    "batteries": "Never place in any cart. Drop off at Household Hazardous Waste facility.",
+    "electronics": "Schedule special pickup or drop off at Dublin Transfer Station.",
+  },
+  "long beach": {
+    "pizza box": "Grease-free boxes in blue recycling bin. Greasy boxes and scraps go in green organics bin.",
+    "plastic bag": "Not accepted curbside. Recycle at retail stores or use reusable bags.",
+    "glass bottle": "All colors accepted in blue recycling bin. Rinse and keep caps on.",
+    "food scraps": "All food waste accepted in green organics bin including meat, dairy, and grease.",
+    "cardboard": "Flatten boxes and place in blue recycling bin. Remove packing materials.",
+    "styrofoam": "Not recyclable in Long Beach. Place in black trash bin.",
+    "plastic container": "Empty, clean, and dry plastics #1-7 accepted. Leave caps on bottles.",
+    "yard waste": "Place in green organics bin. Branches must be under 3 feet long and 3 inches diameter.",
+    "batteries": "Place in clear bag on top of blue recycling bin or drop at EDCO stations.",
+    "electronics": "Free curbside pickup - schedule online or call (562) 570-2876.",
+    "motor oil": "Never pour down drain. Take to any AutoZone or EDCO station for free recycling.",
+    "textiles": "Clothing and fabrics accepted in blue bin if clean and dry. Place in clear plastic bag.",
+  },
 };
 
 serve(async (req) => {
