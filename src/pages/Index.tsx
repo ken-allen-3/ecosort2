@@ -7,6 +7,8 @@ import { useToast } from "@/hooks/use-toast";
 import ResultCard from "@/components/ResultCard";
 import LocationInput from "@/components/LocationInput";
 import AnalysisDebugger from "@/components/AnalysisDebugger";
+import WelcomeOverlay from "@/components/WelcomeOverlay";
+import ExampleImages from "@/components/ExampleImages";
 
 interface ClassificationResult {
   category: "recyclable" | "compostable" | "trash";
@@ -63,6 +65,25 @@ const Index = () => {
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleExampleClick = (item: any) => {
+    if (!location) {
+      toast({
+        title: "Location required",
+        description: "Please set your location first to see local disposal rules",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setResult({
+      category: item.category,
+      item: item.name,
+      confidence: 95,
+      explanation: item.description,
+      municipalNotes: `Based on ${location}'s waste management rules.`,
+    });
   };
 
   const analyzeImage = async () => {
@@ -137,6 +158,8 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <WelcomeOverlay />
+      
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4">
           <h1 className="text-2xl font-bold text-foreground">EcoSort</h1>
@@ -151,12 +174,27 @@ const Index = () => {
           isAnalyzing={isAnalyzing}
         />
         
-        <LocationInput
-          location={location}
-          setLocation={setLocation}
-          isDetectingLocation={isDetectingLocation}
-          detectLocation={detectLocation}
-        />
+        <Card className="p-6 mb-6 bg-primary/5 border-primary/20">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-1">
+              <MapPin className="w-5 h-5 text-primary" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold mb-1">Your Location</h3>
+              <p className="text-sm text-muted-foreground mb-3">
+                Set your location to get accurate local disposal rules
+              </p>
+              <LocationInput
+                location={location}
+                setLocation={setLocation}
+                isDetectingLocation={isDetectingLocation}
+                detectLocation={detectLocation}
+              />
+            </div>
+          </div>
+        </Card>
+
+        {!image && !result && <ExampleImages onExampleClick={handleExampleClick} />}
 
         <Card className="p-6 mb-6">
           <div className="space-y-4">
@@ -166,9 +204,9 @@ const Index = () => {
                   <Camera className="w-16 h-16 text-primary" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-semibold mb-2">Snap a photo</h2>
+                  <h2 className="text-xl font-semibold mb-2">Ready to scan</h2>
                   <p className="text-muted-foreground text-sm">
-                    Take or upload a photo of an item to find out how to dispose of it properly
+                    Point your camera at any item to get instant disposal guidance
                   </p>
                 </div>
                 <input
