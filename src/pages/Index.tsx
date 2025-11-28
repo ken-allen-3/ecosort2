@@ -85,6 +85,7 @@ const Index = () => {
     }
     
     setIsAnalyzing(true);
+    setResult(null); // Clear previous result before new analysis
     
     try {
       console.log("Starting image analysis for location:", location);
@@ -123,9 +124,6 @@ const Index = () => {
       });
     } catch (error) {
       console.error("Classification error:", error);
-      
-      // Reset image state on error to prevent stuck state
-      setResult(null);
       
       toast({
         title: "Analysis failed",
