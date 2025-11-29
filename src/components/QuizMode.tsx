@@ -15,6 +15,7 @@ const QuizMode = ({ image, onComplete, onSkip }: QuizModeProps) => {
   const [draggedOver, setDraggedOver] = useState<Category | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [touchStartPos, setTouchStartPos] = useState<{ x: number; y: number } | null>(null);
 
   const categories = [
     {
@@ -79,6 +80,42 @@ const QuizMode = ({ image, onComplete, onSkip }: QuizModeProps) => {
     }
   };
 
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    setTouchStartPos({ x: touch.clientX, y: touch.clientY });
+    setIsDragging(true);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!touchStartPos) return;
+    
+    const touch = e.touches[0];
+    const element = document.elementFromPoint(touch.clientX, touch.clientY);
+    const dropZone = element?.closest('[data-category]');
+    
+    if (dropZone) {
+      const category = dropZone.getAttribute('data-category') as Category;
+      setDraggedOver(category);
+    } else {
+      setDraggedOver(null);
+    }
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const touch = e.changedTouches[0];
+    const element = document.elementFromPoint(touch.clientX, touch.clientY);
+    const dropZone = element?.closest('[data-category]');
+    
+    if (dropZone) {
+      const category = dropZone.getAttribute('data-category') as Category;
+      setSelectedCategory(category);
+    }
+    
+    setIsDragging(false);
+    setDraggedOver(null);
+    setTouchStartPos(null);
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="text-center space-y-2">
@@ -88,27 +125,8 @@ const QuizMode = ({ image, onComplete, onSkip }: QuizModeProps) => {
         </p>
       </div>
 
-      {/* Draggable Image */}
-      <div className="flex justify-center">
-        <div
-          draggable
-          onDragStart={handleDragStart}
-          onDragEnd={handleDragEnd}
-          className={`relative rounded-xl overflow-hidden border-2 border-border cursor-move transition-all ${
-            isDragging ? "opacity-50 scale-95" : "hover:scale-105"
-          }`}
-          style={{ maxWidth: "200px", maxHeight: "200px" }}
-        >
-          <img
-            src={image}
-            alt="Item to classify"
-            className="w-full h-full object-contain"
-          />
-        </div>
-      </div>
-
       {/* Drop Zones */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-3 mb-6">
         {categories.map((category) => {
           const Icon = category.icon;
           const isSelected = selectedCategory === category.id;
@@ -117,11 +135,12 @@ const QuizMode = ({ image, onComplete, onSkip }: QuizModeProps) => {
           return (
             <Card
               key={category.id}
+              data-category={category.id}
               onClick={() => handleCardClick(category.id)}
               onDragOver={(e) => handleDragOver(e, category.id)}
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(e, category.id)}
-              className={`p-6 flex flex-col items-center justify-center gap-3 cursor-pointer transition-all min-h-[160px] ${
+              className={`p-3 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all min-h-[100px] ${
                 category.bgColor
               } ${category.borderColor} border-2 ${
                 isSelected
@@ -132,19 +151,41 @@ const QuizMode = ({ image, onComplete, onSkip }: QuizModeProps) => {
               }`}
             >
               <div
-                className={`w-16 h-16 rounded-full ${category.bgColor} flex items-center justify-center`}
+                className={`w-10 h-10 rounded-full ${category.bgColor} flex items-center justify-center`}
               >
-                <Icon className={`w-8 h-8 ${category.color}`} />
+                <Icon className={`w-5 h-5 ${category.color}`} />
               </div>
-              <span className={`font-semibold ${category.color}`}>
+              <span className={`font-semibold text-xs ${category.color}`}>
                 {category.label}
               </span>
               {isSelected && (
-                <CheckCircle2 className="w-5 h-5 text-primary animate-scale-in" />
+                <CheckCircle2 className="w-4 h-4 text-primary animate-scale-in" />
               )}
             </Card>
           );
         })}
+      </div>
+
+      {/* Draggable Image */}
+      <div className="flex justify-center">
+        <div
+          draggable
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          className={`relative rounded-xl overflow-hidden border-2 border-border cursor-move transition-all touch-none ${
+            isDragging ? "opacity-50 scale-95" : "hover:scale-105"
+          }`}
+          style={{ maxWidth: "200px", maxHeight: "200px" }}
+        >
+          <img
+            src={image}
+            alt="Item to classify"
+            className="w-full h-full object-contain"
+          />
+        </div>
       </div>
 
       {/* Action Buttons */}
