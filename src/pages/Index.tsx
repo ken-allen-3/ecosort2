@@ -9,6 +9,9 @@ import LocationInput from "@/components/LocationInput";
 import WelcomeOverlay from "@/components/WelcomeOverlay";
 import ExampleImages from "@/components/ExampleImages";
 import AnalysisLoading from "@/components/AnalysisLoading";
+import QuizMode from "@/components/QuizMode";
+import QuizResult from "@/components/QuizResult";
+import QuizSettings from "@/components/QuizSettings";
 import { checkBrowserCompatibility, getBrowserInfo } from "@/lib/browserCompat";
 
 interface ClassificationResult {
@@ -25,6 +28,12 @@ const Index = () => {
   const [result, setResult] = useState<ClassificationResult | null>(null);
   const [location, setLocation] = useState<string>("");
   const [isDetectingLocation, setIsDetectingLocation] = useState(false);
+  const [showQuiz, setShowQuiz] = useState(false);
+  const [userGuess, setUserGuess] = useState<"recyclable" | "compostable" | "trash" | null>(null);
+  const [quizEnabled, setQuizEnabled] = useState(() => {
+    const saved = localStorage.getItem("ecosort-quiz-enabled");
+    return saved ? JSON.parse(saved) : false;
+  });
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -44,6 +53,11 @@ const Index = () => {
       });
     }
   }, [toast]);
+
+  // Save quiz enabled preference
+  useEffect(() => {
+    localStorage.setItem("ecosort-quiz-enabled", JSON.stringify(quizEnabled));
+  }, [quizEnabled]);
 
   const tryIPBasedLocation = async () => {
     try {
@@ -250,6 +264,13 @@ const Index = () => {
     reader.onloadend = () => {
       setImage(reader.result as string);
       setResult(null);
+      setUserGuess(null);
+      
+      // Show quiz if enabled
+      if (quizEnabled && location) {
+        setShowQuiz(true);
+      }
+      
       // Reset input so same file can be selected again if needed
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
@@ -276,6 +297,18 @@ const Index = () => {
       explanation: item.description,
       municipalNotes: `Based on ${location}'s waste management rules.`,
     });
+  };
+
+  const handleQuizComplete = (guess: "recyclable" | "compostable" | "trash") => {
+    setUserGuess(guess);
+    setShowQuiz(false);
+    // Proceed to analysis
+    analyzeImage();
+  };
+
+  const handleQuizSkip = () => {
+    setShowQuiz(false);
+    setUserGuess(null);
   };
 
   const analyzeImage = async () => {
@@ -389,9 +422,12 @@ const Index = () => {
       <WelcomeOverlay />
       
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-3 sm:py-4">
-          <h1 className="text-xl sm:text-2xl font-bold text-foreground">EcoSort</h1>
-          <p className="text-xs sm:text-sm text-muted-foreground">Smart waste classification</p>
+        <div className="container mx-auto px-4 py-3 sm:py-4 flex items-center justify-between">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground">EcoSort</h1>
+            <p className="text-xs sm:text-sm text-muted-foreground">Smart waste classification</p>
+          </div>
+          <QuizSettings quizEnabled={quizEnabled} onToggle={setQuizEnabled} />
         </div>
       </header>
 
@@ -418,9 +454,18 @@ const Index = () => {
 
         {!image && !result && <ExampleImages onExampleClick={handleExampleClick} />}
 
-        <Card className="p-4 sm:p-6">
-          <div className="space-y-4">
-            {!image ? (
+        {showQuiz && image && location ? (
+          <Card className="p-4 sm:p-6">
+            <QuizMode
+              image={image}
+              onComplete={handleQuizComplete}
+              onSkip={handleQuizSkip}
+            />
+          </Card>
+        ) : (
+          <Card className="p-4 sm:p-6">
+            <div className="space-y-4">
+              {!image ? (
               <div className="text-center space-y-4 py-4">
                 <div className="w-24 h-24 sm:w-32 sm:h-32 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
                   <Camera className="w-12 h-12 sm:w-16 sm:h-16 text-primary" />
@@ -470,7 +515,13 @@ const Index = () => {
                     Retake
                   </Button>
                   <Button
-                    onClick={analyzeImage}
+                    onClick={() => {
+                      if (quizEnabled && location) {
+                        setShowQuiz(true);
+                      } else {
+                        analyzeImage();
+                      }
+                    }}
                     disabled={isAnalyzing || !location}
                     className="flex-1 min-h-[48px]"
                   >
@@ -479,6 +530,8 @@ const Index = () => {
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         Analyzing...
                       </>
+                    ) : quizEnabled ? (
+                      "Start Quiz"
                     ) : (
                       "Analyze"
                     )}
@@ -492,7 +545,8 @@ const Index = () => {
               </div>
             )}
           </div>
-        </Card>
+          </Card>
+        )}
 
         {!result && (
           <div className="text-center text-xs sm:text-sm text-muted-foreground px-4">
@@ -503,7 +557,19 @@ const Index = () => {
 
       {isAnalyzing && <AnalysisLoading />}
 
-      {result && (
+      {userGuess && result && !isAnalyzing && (
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="max-w-md w-full">
+            <QuizResult
+              userGuess={userGuess}
+              correctAnswer={result.category}
+              onContinue={() => setUserGuess(null)}
+            />
+          </div>
+        </div>
+      )}
+
+      {result && !userGuess && (
         <ResultModal
           result={result}
           location={location}
