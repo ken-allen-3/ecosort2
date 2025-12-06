@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Camera, Loader2, MapPin, Pencil } from "lucide-react";
+import { Camera, Loader2, MapPin, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
@@ -264,7 +264,7 @@ const Index = () => {
       setResult(data);
       
       toast({
-        title: "Got it!",
+        title: "Got it! 🗑️",
         description: `That goes in the ${data.category} bin`,
       });
     } catch (error) {
@@ -289,11 +289,16 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <WelcomeOverlay onComplete={handleOnboardingComplete} />
       
-      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
+      <header className="border-b-2 border-border bg-card/80 backdrop-blur-sm sticky top-0 z-10">
         <div className="container mx-auto px-4 py-3 sm:py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-foreground">Which Fucking Bin?</h1>
-            <p className="text-xs sm:text-sm text-muted-foreground">Because recycling shouldn't be this hard</p>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-md bg-primary flex items-center justify-center animate-wiggle">
+              <Trash2 className="w-6 h-6 text-primary-foreground" />
+            </div>
+            <div>
+              <h1 className="font-display text-xl sm:text-2xl text-foreground tracking-wide">Which Fucking Bin?</h1>
+              <p className="text-xs sm:text-sm text-muted-foreground">Because recycling shouldn't be this hard</p>
+            </div>
           </div>
           <QuizSettings quizEnabled={quizEnabled} onToggle={setQuizEnabled} />
         </div>
@@ -303,7 +308,7 @@ const Index = () => {
         {/* Compact location display */}
         {location && (
           <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-            <MapPin className="w-4 h-4" />
+            <MapPin className="w-4 h-4 text-primary" />
             {isEditingLocation ? (
               <div className="flex items-center gap-2">
                 <LocationInput
@@ -321,7 +326,7 @@ const Index = () => {
               </div>
             ) : (
               <>
-                <span>{location}</span>
+                <span className="font-medium">{location}</span>
                 <button
                   onClick={handleLocationEdit}
                   className="p-1 hover:bg-muted rounded transition-colors"
@@ -337,7 +342,7 @@ const Index = () => {
         {!image && !result && <ExampleImages onExampleClick={handleExampleClick} />}
 
         {showQuiz && image && location ? (
-          <Card className="p-4 sm:p-6">
+          <Card className="p-4 sm:p-6 animate-drop">
             <QuizMode
               image={image}
               onComplete={handleQuizComplete}
@@ -345,15 +350,15 @@ const Index = () => {
             />
           </Card>
         ) : (
-          <Card className="p-4 sm:p-6">
+          <Card className="p-4 sm:p-6 animate-fade-in">
             <div className="space-y-4">
               {!image ? (
               <div className="text-center space-y-4 py-4">
-                <div className="w-24 h-24 sm:w-32 sm:h-32 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
+                <div className="w-24 h-24 sm:w-32 sm:h-32 mx-auto rounded-lg bg-primary/20 border-2 border-primary/30 flex items-center justify-center animate-pulse-glow">
                   <Camera className="w-12 h-12 sm:w-16 sm:h-16 text-primary" />
                 </div>
                 <div>
-                  <h2 className="text-lg sm:text-xl font-semibold mb-2">What the hell is it?</h2>
+                  <h2 className="font-display text-2xl sm:text-3xl mb-2 tracking-wide">What the Hell Is It?</h2>
                   <p className="text-muted-foreground text-sm">
                     Snap a pic of your mystery trash and I'll tell you where it goes
                   </p>
@@ -370,15 +375,15 @@ const Index = () => {
                 <Button
                   size="lg"
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-full sm:w-auto min-h-[48px]"
+                  className="w-full sm:w-auto min-h-[48px] text-base"
                 >
                   <Camera className="mr-2 h-5 w-5" />
-                  Scan This Crap
+                  Scan This Crap 📸
                 </Button>
               </div>
             ) : (
-              <div className="space-y-4">
-                <div className="relative rounded-lg overflow-hidden max-h-[60vh]">
+              <div className="space-y-4 animate-drop">
+                <div className="relative rounded-lg overflow-hidden max-h-[60vh] border-2 border-border">
                   <img 
                     src={image} 
                     alt="Captured item" 
@@ -413,15 +418,15 @@ const Index = () => {
                         Figuring it out...
                       </>
                     ) : quizEnabled ? (
-                      "Test Me First"
+                      "Test Me First 🧠"
                     ) : (
-                      "Where Does It Go?"
+                      "Where Does It Go? 🗑️"
                     )}
                   </Button>
                 </div>
                 {!location && (
-                  <p className="text-sm text-destructive text-center">
-                    Set your location first, ya dingus
+                  <p className="text-sm text-destructive text-center font-medium">
+                    ⚠️ Set your location first, ya dingus
                   </p>
                 )}
               </div>
@@ -432,7 +437,7 @@ const Index = () => {
 
         {!result && (
           <div className="text-center text-xs sm:text-sm text-muted-foreground px-4">
-            <p>Let's stop throwing recyclables in the damn trash</p>
+            <p>Let's stop throwing recyclables in the damn trash 💪</p>
           </div>
         )}
       </main>
@@ -441,7 +446,7 @@ const Index = () => {
 
       {userGuess && result && !isAnalyzing && (
         <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="max-w-md w-full">
+          <div className="max-w-md w-full animate-slam">
             <QuizResult
               userGuess={userGuess}
               correctAnswer={result.category}

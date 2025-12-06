@@ -25,35 +25,38 @@ const ResultModal = ({ result, location, onClose }: ResultModalProps) => {
       case "recyclable":
         return {
           icon: Recycle,
-          color: "text-blue-600",
-          bgColor: "bg-blue-500/10",
-          borderColor: "border-blue-500/20",
-          title: "Recycling Bin ♻️",
+          color: "text-recyclable",
+          bgColor: "bg-recyclable/20",
+          borderColor: "border-recyclable",
+          title: "Recycling Bin",
           subtitle: "Toss it in the blue one",
           emoji: "♻️",
         };
       case "compostable":
         return {
           icon: Leaf,
-          color: "text-green-600",
-          bgColor: "bg-green-500/10",
-          borderColor: "border-green-500/20",
-          title: "Compost Bin 🌱",
+          color: "text-compostable",
+          bgColor: "bg-compostable/20",
+          borderColor: "border-compostable",
+          title: "Compost Bin",
           subtitle: "Let it rot with dignity",
           emoji: "🌱",
         };
       case "trash":
         return {
           icon: Trash2,
-          color: "text-gray-600",
-          bgColor: "bg-gray-500/10",
-          borderColor: "border-gray-500/20",
-          title: "Trash Bin 🗑️",
+          color: "text-trash",
+          bgColor: "bg-trash/20",
+          borderColor: "border-trash",
+          title: "Trash Bin",
           subtitle: "Into the landfill it goes",
           emoji: "🗑️",
         };
     }
   };
+
+  const config = getCategoryConfig();
+  const Icon = config.icon;
 
   const getShareText = () => {
     const binName = result.category === "recyclable" ? "recycling" : result.category === "compostable" ? "compost" : "trash";
@@ -95,16 +98,13 @@ const ResultModal = ({ result, location, onClose }: ResultModalProps) => {
     }
   };
 
-  const config = getCategoryConfig();
-  const Icon = config.icon;
-
   return (
     <div className="fixed inset-0 z-50 bg-background animate-slide-in-right">
       <div className="h-full flex flex-col">
         {/* Header */}
-        <div className="border-b border-border bg-card/50 backdrop-blur-sm">
+        <div className="border-b-2 border-border bg-card/80 backdrop-blur-sm">
           <div className="container mx-auto px-4 py-3 sm:py-4 flex items-center justify-between">
-            <h2 className="text-lg sm:text-xl font-bold">The Verdict</h2>
+            <h2 className="font-display text-xl sm:text-2xl tracking-wide">The Verdict</h2>
             <Button variant="ghost" size="icon" onClick={onClose} className="min-h-[44px] min-w-[44px]">
               <X className="w-5 h-5" />
             </Button>
@@ -115,14 +115,14 @@ const ResultModal = ({ result, location, onClose }: ResultModalProps) => {
         <div className="flex-1 overflow-y-auto">
           <div className="container mx-auto px-4 py-6 sm:py-8 max-w-2xl space-y-4 sm:space-y-6">
             {/* Category Badge */}
-            <Card className={`p-8 text-center border-2 ${config.borderColor} ${config.bgColor}`}>
-              <div className={`w-24 h-24 mx-auto rounded-full ${config.bgColor} flex items-center justify-center mb-4`}>
+            <Card className={`p-8 text-center border-3 ${config.borderColor} ${config.bgColor} animate-bounce-in`}>
+              <div className={`w-24 h-24 mx-auto rounded-lg ${config.bgColor} border-2 ${config.borderColor} flex items-center justify-center mb-4 animate-wiggle`}>
                 <Icon className={`w-12 h-12 ${config.color}`} />
               </div>
-              <h3 className="text-3xl font-bold mb-2">{config.title}</h3>
+              <h3 className="font-display text-4xl sm:text-5xl mb-2 tracking-wide">{config.title} {config.emoji}</h3>
               <p className="text-lg text-muted-foreground mb-1">{config.subtitle}</p>
-              <p className="text-xl text-foreground font-medium mb-2">{result.item}</p>
-              <div className="inline-flex items-center gap-2 text-sm text-muted-foreground">
+              <p className="text-xl text-foreground font-bold mb-2">{result.item}</p>
+              <div className="inline-flex items-center gap-2 text-sm text-muted-foreground bg-background/50 px-3 py-1 rounded-full border border-border">
                 <span className="font-medium">
                   {result.confidence > 1 ? result.confidence : (result.confidence * 100).toFixed(0)}% sure about this
                 </span>
@@ -130,33 +130,35 @@ const ResultModal = ({ result, location, onClose }: ResultModalProps) => {
             </Card>
 
             {/* Explanation */}
-            <Card className="p-6">
-              <h4 className="font-semibold mb-3 flex items-center gap-2">
-                <div className={`w-2 h-2 rounded-full ${config.color === 'text-blue-600' ? 'bg-blue-600' : config.color === 'text-green-600' ? 'bg-green-600' : 'bg-gray-600'}`}></div>
-                Why? Here's the deal:
+            <Card className="p-6 animate-fade-in" style={{ animationDelay: "0.1s" }}>
+              <h4 className="font-display text-xl mb-3 flex items-center gap-2 tracking-wide">
+                <div className={`w-3 h-3 rounded-sm ${config.bgColor} border ${config.borderColor}`}></div>
+                Why? Here's the Deal:
               </h4>
               <p className="text-muted-foreground leading-relaxed">{result.explanation}</p>
             </Card>
 
             {/* Municipal Notes */}
             {result.municipalNotes && (
-              <Card className="p-6 bg-primary/5 border-primary/20">
-                <h4 className="font-semibold mb-3 flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-primary" />
-                  {location}'s special rules (of course they have some)
+              <Card className="p-6 bg-primary/10 border-primary/30 animate-fade-in" style={{ animationDelay: "0.2s" }}>
+                <h4 className="font-display text-xl mb-3 flex items-center gap-2 tracking-wide">
+                  <MapPin className="w-5 h-5 text-primary" />
+                  {location}'s Special Rules 🙄
                 </h4>
                 <p className="text-muted-foreground leading-relaxed">{result.municipalNotes}</p>
               </Card>
             )}
 
             {/* Ask Question */}
-            <AskQuestion result={result} location={location} />
+            <div className="animate-fade-in" style={{ animationDelay: "0.3s" }}>
+              <AskQuestion result={result} location={location} />
+            </div>
 
             {/* Action Buttons */}
-            <div className="space-y-3 pt-2 sm:pt-4">
+            <div className="space-y-3 pt-2 sm:pt-4 animate-fade-in" style={{ animationDelay: "0.4s" }}>
               <div className="flex gap-3">
-                <Button onClick={onClose} className="flex-1 min-h-[48px]" size="lg">
-                  Got More Trash
+                <Button onClick={onClose} className="flex-1 min-h-[48px] text-base" size="lg">
+                  Got More Trash 🗑️
                 </Button>
                 <Button 
                   onClick={handleShare} 
@@ -165,14 +167,14 @@ const ResultModal = ({ result, location, onClose }: ResultModalProps) => {
                   size="icon"
                 >
                   {copied ? (
-                    <Check className="w-5 h-5 text-green-500" />
+                    <Check className="w-5 h-5 text-compostable" />
                   ) : (
                     <Share2 className="w-5 h-5" />
                   )}
                 </Button>
               </div>
               <p className="text-center text-xs sm:text-sm text-muted-foreground">
-                Share this revelation or keep sorting. You're killing it either way.
+                Share this revelation or keep sorting. You're killing it either way. 💪
               </p>
             </div>
           </div>

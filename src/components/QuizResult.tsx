@@ -12,35 +12,35 @@ const QuizResult = ({ userGuess, correctAnswer, onContinue }: QuizResultProps) =
   const isCorrect = userGuess === correctAnswer;
 
   return (
-    <Card className={`p-6 space-y-4 animate-scale-in ${
-      isCorrect ? "bg-compostable/10 border-compostable" : "bg-destructive/10 border-destructive"
+    <Card className={`p-6 space-y-4 border-3 ${
+      isCorrect ? "bg-compostable/20 border-compostable" : "bg-destructive/20 border-destructive"
     }`}>
       <div className="flex items-center justify-center gap-3">
         {isCorrect ? (
-          <CheckCircle2 className="w-12 h-12 text-compostable" />
+          <CheckCircle2 className="w-16 h-16 text-compostable animate-bounce-in" />
         ) : (
-          <XCircle className="w-12 h-12 text-destructive" />
+          <XCircle className="w-16 h-16 text-destructive animate-shake" />
         )}
       </div>
 
       <div className="text-center space-y-2">
-        <h3 className="text-xl font-bold">
-          {isCorrect ? "Hell yeah!" : "Nope, not quite!"}
+        <h3 className="font-display text-3xl tracking-wide">
+          {isCorrect ? "Hell Yeah! 🎉" : "Nope, Not Quite! 😅"}
         </h3>
         <p className="text-muted-foreground">
           {isCorrect ? (
-            <>You said <span className="font-semibold text-foreground">{userGuess}</span> and you nailed it!</>
+            <>You said <span className="font-bold text-foreground">{userGuess}</span> and you nailed it!</>
           ) : (
             <>
-              You guessed <span className="font-semibold text-foreground">{userGuess}</span>, but it's actually{" "}
-              <span className="font-semibold text-foreground">{correctAnswer}</span>. It happens.
+              You guessed <span className="font-bold text-foreground">{userGuess}</span>, but it's actually{" "}
+              <span className="font-bold text-foreground">{correctAnswer}</span>. It happens. 🤷
             </>
           )}
         </p>
       </div>
 
       <Button onClick={onContinue} className="w-full" size="lg">
-        Show Me the Details
+        Show Me the Details 📋
         <ArrowRight className="ml-2 h-4 w-4" />
       </Button>
     </Card>
