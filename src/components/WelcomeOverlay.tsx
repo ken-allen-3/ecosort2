@@ -1,10 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Camera, MapPin, Sparkles, ArrowRight, Loader2, ChevronLeft } from "lucide-react";
+import { Camera, MapPin, Sparkles, ArrowRight, ChevronLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import LocationInput from "@/components/LocationInput";
 
 interface WelcomeOverlayProps {
   onComplete: (location: string) => void;
@@ -139,10 +139,6 @@ const WelcomeOverlay = ({ onComplete }: WelcomeOverlayProps) => {
     onComplete(location.trim());
   };
 
-  const handleLocationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setLocation(e.target.value.slice(0, 100));
-  };
-
   if (!isVisible) return null;
 
   return (
@@ -234,30 +230,12 @@ const WelcomeOverlay = ({ onComplete }: WelcomeOverlayProps) => {
             </div>
 
             <div className="space-y-4">
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Enter your city (e.g., San Francisco)"
-                  value={location}
-                  onChange={handleLocationChange}
-                  className="flex-1"
-                  maxLength={100}
-                  disabled={isDetectingLocation}
-                />
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={detectLocation}
-                  disabled={isDetectingLocation}
-                  title="Detect my location"
-                  className="min-w-[44px]"
-                >
-                  {isDetectingLocation ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <MapPin className="h-4 w-4" />
-                  )}
-                </Button>
-              </div>
+              <LocationInput
+                location={location}
+                setLocation={setLocation}
+                isDetectingLocation={isDetectingLocation}
+                detectLocation={detectLocation}
+              />
 
               <p className="text-xs text-muted-foreground text-center">
                 You can change this later in settings

@@ -7,15 +7,25 @@ import { usCities } from "@/data/usCities";
 interface LocationInputProps {
   location: string;
   setLocation: (location: string) => void;
-  isDetectingLocation: boolean;
-  detectLocation: () => void;
+  isDetectingLocation?: boolean;
+  detectLocation?: () => void;
+  showDetectButton?: boolean;
+  showStatusText?: boolean;
+  placeholder?: string;
+  inputClassName?: string;
+  onEnter?: () => void;
 }
 
 const LocationInput = ({
   location,
   setLocation,
-  isDetectingLocation,
+  isDetectingLocation = false,
   detectLocation,
+  showDetectButton = true,
+  showStatusText = true,
+  placeholder = "Enter your city (e.g., San Ramon, Long Beach)",
+  inputClassName = "",
+  onEnter,
 }: LocationInputProps) => {
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -58,9 +68,13 @@ const LocationInput = ({
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
       setHighlightedIndex(prev => (prev > 0 ? prev - 1 : -1));
-    } else if (e.key === "Enter" && highlightedIndex >= 0) {
-      e.preventDefault();
-      selectSuggestion(suggestions[highlightedIndex]);
+    } else if (e.key === "Enter") {
+      if (highlightedIndex >= 0) {
+        e.preventDefault();
+        selectSuggestion(suggestions[highlightedIndex]);
+      } else if (onEnter) {
+        onEnter();
+      }
     } else if (e.key === "Escape") {
       setShowSuggestions(false);
     }
@@ -88,14 +102,14 @@ const LocationInput = ({
         <div className="flex-1 relative">
           <Input
             ref={inputRef}
-            placeholder="Enter your city (e.g., San Ramon, Long Beach)"
+            placeholder={placeholder}
             value={location}
             onChange={handleLocationChange}
             onKeyDown={handleKeyDown}
             onFocus={() => {
               if (suggestions.length > 0) setShowSuggestions(true);
             }}
-            className="w-full"
+            className={`w-full ${inputClassName}`}
             maxLength={100}
             disabled={isDetectingLocation}
             aria-label="Enter your city location"
@@ -126,23 +140,25 @@ const LocationInput = ({
             </div>
           )}
         </div>
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={detectLocation}
-          disabled={isDetectingLocation}
-          title="Detect my location"
-          aria-label="Detect my location automatically"
-          type="button"
-        >
-          {isDetectingLocation ? (
-            <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-          ) : (
-            <MapPin className="h-4 w-4" aria-hidden="true" />
-          )}
-        </Button>
+        {showDetectButton && detectLocation && (
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={detectLocation}
+            disabled={isDetectingLocation}
+            title="Detect my location"
+            aria-label="Detect my location automatically"
+            type="button"
+          >
+            {isDetectingLocation ? (
+              <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+            ) : (
+              <MapPin className="h-4 w-4" aria-hidden="true" />
+            )}
+          </Button>
+        )}
       </div>
-      {location && (
+      {showStatusText && location && (
         <p className="text-xs text-muted-foreground" role="status" aria-live="polite">
           Using disposal rules for {location.trim()}
         </p>

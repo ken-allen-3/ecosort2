@@ -2,7 +2,6 @@ import { useState, useRef, useEffect } from "react";
 import { Camera, Loader2, MapPin, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import ResultModal from "@/components/ResultModal";
@@ -12,6 +11,7 @@ import AnalysisLoading from "@/components/AnalysisLoading";
 import QuizMode from "@/components/QuizMode";
 import QuizResult from "@/components/QuizResult";
 import QuizSettings from "@/components/QuizSettings";
+import LocationInput from "@/components/LocationInput";
 import { checkBrowserCompatibility, getBrowserInfo } from "@/lib/browserCompat";
 
 interface ClassificationResult {
@@ -306,16 +306,14 @@ const Index = () => {
             <MapPin className="w-4 h-4" />
             {isEditingLocation ? (
               <div className="flex items-center gap-2">
-                <Input
-                  value={editedLocation}
-                  onChange={(e) => setEditedLocation(e.target.value.slice(0, 100))}
-                  className="h-8 w-48 text-sm"
-                  maxLength={100}
-                  autoFocus
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') handleLocationSave();
-                    if (e.key === 'Escape') setIsEditingLocation(false);
-                  }}
+                <LocationInput
+                  location={editedLocation}
+                  setLocation={setEditedLocation}
+                  showDetectButton={false}
+                  showStatusText={false}
+                  placeholder="Enter city"
+                  inputClassName="h-8 w-48 text-sm"
+                  onEnter={handleLocationSave}
                 />
                 <Button size="sm" variant="ghost" onClick={handleLocationSave} className="h-8">
                   Save
