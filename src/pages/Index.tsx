@@ -1,11 +1,11 @@
-import { useState, useRef, useCallback, useEffect } from "react";
-import { Camera, MapPin, Loader2 } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Camera, Loader2, MapPin, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import ResultModal from "@/components/ResultModal";
-import LocationInput from "@/components/LocationInput";
 import WelcomeOverlay from "@/components/WelcomeOverlay";
 import ExampleImages from "@/components/ExampleImages";
 import AnalysisLoading from "@/components/AnalysisLoading";
@@ -20,14 +20,18 @@ interface ClassificationResult {
   confidence: number;
   explanation: string;
   municipalNotes?: string;
+  disclaimer?: string;
 }
 
 const Index = () => {
   const [image, setImage] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [result, setResult] = useState<ClassificationResult | null>(null);
-  const [location, setLocation] = useState<string>("");
-  const [isDetectingLocation, setIsDetectingLocation] = useState(false);
+  const [location, setLocation] = useState<string>(() => {
+    return localStorage.getItem("ecosort-location") || "";
+  });
+  const [isEditingLocation, setIsEditingLocation] = useState(false);
+  const [editedLocation, setEditedLocation] = useState("");
   const [showQuiz, setShowQuiz] = useState(false);
   const [userGuess, setUserGuess] = useState<"recyclable" | "compostable" | "trash" | null>(null);
   const [quizEnabled, setQuizEnabled] = useState(() => {
@@ -36,6 +40,10 @@ const Index = () => {
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+
+  const handleOnboardingComplete = (newLocation: string) => {
+    setLocation(newLocation);
+  };
 
   // Check browser compatibility on mount
   useEffect(() => {
@@ -59,156 +67,10 @@ const Index = () => {
     localStorage.setItem("ecosort-quiz-enabled", JSON.stringify(quizEnabled));
   }, [quizEnabled]);
 
-  const tryIPBasedLocation = async () => {
-    try {
-      console.log("📍 Attempting IP-based geolocation fallback...");
-      
-      const { data, error } = await supabase.functions.invoke('ip-geolocation');
-      
-      if (error || !data?.city) {
-        throw new Error("IP-based location failed");
-      }
-
-      console.log("✅ IP-based location detected:", data.city);
-      setLocation(data.city);
-      toast({
-        title: "Location detected",
-        description: `Using disposal rules for ${data.city} (approximate location)`,
-      });
-      return true;
-    } catch (error) {
-      console.error("❌ IP-based location failed:", error);
-      return false;
-    }
-  };
-
-  const detectLocation = useCallback(async () => {
-    console.log("🔍 Location detection started");
-    console.log("📍 Protocol:", window.location.protocol);
-    console.log("📍 Is HTTPS:", window.location.protocol === 'https:');
-    
-    if (!navigator.geolocation) {
-      console.error("❌ Geolocation API not available, trying IP-based fallback");
-      setIsDetectingLocation(true);
-      const success = await tryIPBasedLocation();
-      setIsDetectingLocation(false);
-      
-      if (!success) {
-        toast({
-          title: "Location detection failed",
-          description: "Please enter your location manually",
-          variant: "destructive",
-        });
-      }
-      return;
-    }
-
-    console.log("✅ Geolocation API available");
-    setIsDetectingLocation(true);
-    
-    try {
-      console.log("📍 Requesting position from browser...");
-      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-        const timeout = setTimeout(() => {
-          console.error("❌ Position request timed out after 10s");
-          reject(new Error("Location detection timed out"));
-        }, 10000);
-
-        navigator.geolocation.getCurrentPosition(
-          (pos) => {
-            clearTimeout(timeout);
-            console.log("✅ Position received:", {
-              lat: pos.coords.latitude,
-              lon: pos.coords.longitude,
-              accuracy: pos.coords.accuracy
-            });
-            resolve(pos);
-          },
-          (err) => {
-            clearTimeout(timeout);
-            console.error("❌ Geolocation error:", {
-              code: err.code,
-              message: err.message,
-              PERMISSION_DENIED: err.code === 1,
-              POSITION_UNAVAILABLE: err.code === 2,
-              TIMEOUT: err.code === 3
-            });
-            reject(err);
-          },
-          { timeout: 10000, enableHighAccuracy: false }
-        );
-      });
-
-      console.log("📍 Fetching city name via backend...");
-      
-      const { data, error: geocodeError } = await supabase.functions.invoke('reverse-geocode', {
-        body: { 
-          latitude: position.coords.latitude, 
-          longitude: position.coords.longitude 
-        }
-      });
-      
-      console.log("📍 Backend response:", data);
-      
-      if (geocodeError) {
-        console.error("❌ Reverse geocode error:", geocodeError);
-        throw new Error(`Failed to fetch location data: ${geocodeError.message}`);
-      }
-      
-      if (!data) {
-        throw new Error('No data received from reverse geocode');
-      }
-      
-      const city = data.address?.city || data.address?.town || data.address?.village || "";
-      console.log("📍 Extracted city:", city);
-      
-      if (!city) {
-        console.error("❌ Could not extract city from response");
-        throw new Error("Could not determine city name");
-      }
-
-      setLocation(city);
-      console.log("✅ Location set successfully:", city);
-      
-      toast({
-        title: "Location detected",
-        description: `Set to ${city}`,
-      });
-    } catch (error) {
-      console.error("❌ GPS location detection failed, trying IP-based fallback");
-      
-      const success = await tryIPBasedLocation();
-      
-      if (!success) {
-        let errorMessage = "Location detection failed. Please enter your location manually.";
-        
-        if (error instanceof GeolocationPositionError) {
-          if (error.code === 1) {
-            errorMessage = "Location permission denied. Please enter your location manually.";
-          } else if (error.code === 2) {
-            errorMessage = "Unable to detect location. Please enter your location manually.";
-          } else if (error.code === 3) {
-            errorMessage = "Location detection timed out. Please enter your location manually.";
-          }
-        }
-        
-        toast({
-          title: "Location detection failed",
-          description: errorMessage,
-          variant: "destructive",
-        });
-      }
-    } finally {
-      setIsDetectingLocation(false);
-      console.log("🔍 Location detection completed");
-    }
-  }, [toast]);
-
   const handleImageCapture = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Check FileReader support
     if (!window.FileReader) {
       toast({
         title: "Browser not supported",
@@ -218,21 +80,18 @@ const Index = () => {
       return;
     }
 
-    // Validate file type
     if (!file.type.startsWith('image/')) {
       toast({
         title: "Invalid file type",
         description: "Please select an image file (JPG, PNG, etc.)",
         variant: "destructive",
       });
-      // Reset input so user can try again
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
       return;
     }
 
-    // Validate file size (max 10MB)
     const maxSize = 10 * 1024 * 1024;
     if (file.size > maxSize) {
       toast({
@@ -240,7 +99,6 @@ const Index = () => {
         description: "Please select an image smaller than 10MB",
         variant: "destructive",
       });
-      // Reset input so user can try again
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
@@ -255,7 +113,6 @@ const Index = () => {
         description: "Please try selecting the image again",
         variant: "destructive",
       });
-      // Reset input so user can try again
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
@@ -266,12 +123,10 @@ const Index = () => {
       setResult(null);
       setUserGuess(null);
       
-      // Show quiz if enabled
       if (quizEnabled && location) {
         setShowQuiz(true);
       }
       
-      // Reset input so same file can be selected again if needed
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
@@ -295,20 +150,37 @@ const Index = () => {
       item: item.name,
       confidence: 95,
       explanation: item.description,
-      municipalNotes: `Based on ${location}'s waste management rules.`,
+      disclaimer: `Rules may vary. Please verify with ${location}'s official waste management resources.`,
     });
   };
 
   const handleQuizComplete = (guess: "recyclable" | "compostable" | "trash") => {
     setUserGuess(guess);
     setShowQuiz(false);
-    // Proceed to analysis
     analyzeImage();
   };
 
   const handleQuizSkip = () => {
     setShowQuiz(false);
     setUserGuess(null);
+  };
+
+  const handleLocationEdit = () => {
+    setEditedLocation(location);
+    setIsEditingLocation(true);
+  };
+
+  const handleLocationSave = () => {
+    const trimmed = editedLocation.trim();
+    if (trimmed) {
+      setLocation(trimmed);
+      localStorage.setItem("ecosort-location", trimmed);
+      toast({
+        title: "Location updated",
+        description: `Now using rules for ${trimmed}`,
+      });
+    }
+    setIsEditingLocation(false);
   };
 
   const analyzeImage = async () => {
@@ -331,7 +203,6 @@ const Index = () => {
       return;
     }
 
-    // Prevent double submission
     if (isAnalyzing) {
       return;
     }
@@ -346,7 +217,7 @@ const Index = () => {
           description: "Still analyzing, please wait...",
         });
       }
-    }, 15000); // Show message if it takes more than 15 seconds
+    }, 15000);
     
     try {
       console.log("Starting image analysis for location:", trimmedLocation);
@@ -365,7 +236,6 @@ const Index = () => {
       if (error) {
         console.error("Edge function error:", error);
         
-        // Handle specific error types
         if (error.message?.includes("429") || error.message?.includes("rate limit")) {
           throw new Error("Service is busy. Please try again in a moment.");
         }
@@ -380,13 +250,11 @@ const Index = () => {
         throw new Error("No response from classification service");
       }
 
-      // Validate response structure
       if (!data.category || !data.item) {
         console.error("Invalid response structure:", data);
         throw new Error("Invalid response from classification service");
       }
 
-      // Validate category
       if (!["recyclable", "compostable", "trash"].includes(data.category)) {
         console.error("Invalid category:", data.category);
         throw new Error("Invalid classification category received");
@@ -419,7 +287,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <WelcomeOverlay />
+      <WelcomeOverlay onComplete={handleOnboardingComplete} />
       
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
         <div className="container mx-auto px-4 py-3 sm:py-4 flex items-center justify-between">
@@ -432,25 +300,41 @@ const Index = () => {
       </header>
 
       <main className="container mx-auto px-4 py-6 max-w-2xl space-y-4">
-        <Card className="p-4 sm:p-6 bg-primary/5 border-primary/20">
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-              <MapPin className="w-5 h-5 text-primary" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="font-semibold mb-1 text-sm sm:text-base">Your Location</h3>
-              <p className="text-xs sm:text-sm text-muted-foreground mb-3">
-                Set your location for accurate local rules
-              </p>
-              <LocationInput
-                location={location}
-                setLocation={setLocation}
-                isDetectingLocation={isDetectingLocation}
-                detectLocation={detectLocation}
-              />
-            </div>
+        {/* Compact location display */}
+        {location && (
+          <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+            <MapPin className="w-4 h-4" />
+            {isEditingLocation ? (
+              <div className="flex items-center gap-2">
+                <Input
+                  value={editedLocation}
+                  onChange={(e) => setEditedLocation(e.target.value.slice(0, 100))}
+                  className="h-8 w-48 text-sm"
+                  maxLength={100}
+                  autoFocus
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleLocationSave();
+                    if (e.key === 'Escape') setIsEditingLocation(false);
+                  }}
+                />
+                <Button size="sm" variant="ghost" onClick={handleLocationSave} className="h-8">
+                  Save
+                </Button>
+              </div>
+            ) : (
+              <>
+                <span>{location}</span>
+                <button
+                  onClick={handleLocationEdit}
+                  className="p-1 hover:bg-muted rounded transition-colors"
+                  title="Change location"
+                >
+                  <Pencil className="w-3 h-3" />
+                </button>
+              </>
+            )}
           </div>
-        </Card>
+        )}
 
         {!image && !result && <ExampleImages onExampleClick={handleExampleClick} />}
 
