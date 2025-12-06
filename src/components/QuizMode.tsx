@@ -20,27 +20,27 @@ const QuizMode = ({ image, onComplete, onSkip }: QuizModeProps) => {
   const categories = [
     {
       id: "recyclable" as Category,
-      label: "Recycling",
+      label: "Recycling ♻️",
       icon: Recycle,
       color: "text-recyclable",
-      bgColor: "bg-recyclable/10",
-      borderColor: "border-recyclable/30",
+      bgColor: "bg-recyclable/20",
+      borderColor: "border-recyclable",
     },
     {
       id: "compostable" as Category,
-      label: "Compost",
+      label: "Compost 🌱",
       icon: Leaf,
       color: "text-compostable",
-      bgColor: "bg-compostable/10",
-      borderColor: "border-compostable/30",
+      bgColor: "bg-compostable/20",
+      borderColor: "border-compostable",
     },
     {
       id: "trash" as Category,
-      label: "Trash",
+      label: "Trash 🗑️",
       icon: Trash2,
       color: "text-trash",
-      bgColor: "bg-trash/10",
-      borderColor: "border-trash/30",
+      bgColor: "bg-trash/20",
+      borderColor: "border-trash",
     },
   ];
 
@@ -119,7 +119,7 @@ const QuizMode = ({ image, onComplete, onSkip }: QuizModeProps) => {
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="text-center space-y-2">
-        <h2 className="text-2xl font-bold text-foreground">Quick, Where Does It Go?</h2>
+        <h2 className="font-display text-3xl text-foreground tracking-wide">Quick, Where Does It Go? 🤔</h2>
         <p className="text-muted-foreground">
           Think you know? Drag it or tap to make your guess.
         </p>
@@ -140,26 +140,26 @@ const QuizMode = ({ image, onComplete, onSkip }: QuizModeProps) => {
               onDragOver={(e) => handleDragOver(e, category.id)}
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(e, category.id)}
-              className={`p-3 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all min-h-[100px] ${
+              className={`p-3 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all min-h-[100px] border-2 ${
                 category.bgColor
-              } ${category.borderColor} border-2 ${
+              } ${
                 isSelected
-                  ? "ring-4 ring-primary/50 border-primary scale-105"
+                  ? `ring-4 ring-primary/50 ${category.borderColor} scale-105 animate-shake`
                   : isDraggedOverThis
-                  ? "scale-105 border-primary"
-                  : "hover:scale-102"
+                  ? `scale-105 ${category.borderColor}`
+                  : `border-border hover:${category.borderColor}`
               }`}
             >
               <div
-                className={`w-10 h-10 rounded-full ${category.bgColor} flex items-center justify-center`}
+                className={`w-10 h-10 rounded-md ${category.bgColor} border ${category.borderColor} flex items-center justify-center`}
               >
                 <Icon className={`w-5 h-5 ${category.color}`} />
               </div>
-              <span className={`font-semibold text-xs ${category.color}`}>
+              <span className={`font-bold text-xs ${category.color}`}>
                 {category.label}
               </span>
               {isSelected && (
-                <CheckCircle2 className="w-4 h-4 text-primary animate-scale-in" />
+                <CheckCircle2 className="w-4 h-4 text-primary animate-bounce-in" />
               )}
             </Card>
           );
@@ -175,8 +175,8 @@ const QuizMode = ({ image, onComplete, onSkip }: QuizModeProps) => {
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
-          className={`relative rounded-xl overflow-hidden border-2 border-border cursor-move transition-all touch-none ${
-            isDragging ? "opacity-50 scale-95" : "hover:scale-105"
+          className={`relative rounded-lg overflow-hidden border-3 border-border cursor-move transition-all touch-none ${
+            isDragging ? "opacity-50 scale-95 rotate-2" : "hover:scale-105 hover:-rotate-1"
           }`}
           style={{ maxWidth: "200px", maxHeight: "200px" }}
         >
@@ -191,14 +191,14 @@ const QuizMode = ({ image, onComplete, onSkip }: QuizModeProps) => {
       {/* Action Buttons */}
       <div className="flex gap-3">
         <Button variant="outline" onClick={onSkip} className="flex-1">
-          Just Tell Me
+          Just Tell Me 🙄
         </Button>
         <Button
           onClick={handleSubmit}
           disabled={!selectedCategory}
           className="flex-1"
         >
-          Lock It In
+          Lock It In 🎯
         </Button>
       </div>
     </div>
