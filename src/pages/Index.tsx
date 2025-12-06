@@ -382,7 +382,11 @@ const Index = () => {
                 </Button>
                 
                 {/* Quiz mode toggle */}
-                <div className="flex items-center justify-center gap-3 pt-2">
+                <div className="flex items-center justify-center gap-3 pt-3">
+                  <span className="text-sm font-bold text-primary">🧠</span>
+                  <label htmlFor="quiz-toggle" className="text-sm font-medium text-foreground cursor-pointer">
+                    Test Your Fucking Knowledge
+                  </label>
                   <label htmlFor="quiz-toggle" className="text-sm text-muted-foreground cursor-pointer">
                     Quiz Mode
                   </label>
