@@ -1,7 +1,7 @@
 import { Recycle, Leaf, Trash2, X, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-
+import AskQuestion from "./AskQuestion";
 interface ResultModalProps {
   result: {
     category: "recyclable" | "compostable" | "trash";
@@ -96,6 +96,9 @@ const ResultModal = ({ result, location, onClose }: ResultModalProps) => {
                 <p className="text-muted-foreground leading-relaxed">{result.municipalNotes}</p>
               </Card>
             )}
+
+            {/* Ask Question */}
+            <AskQuestion result={result} location={location} />
 
             {/* Action Buttons */}
             <div className="space-y-3 pt-2 sm:pt-4">
