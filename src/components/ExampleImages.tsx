@@ -13,19 +13,19 @@ const examples: ExampleItem[] = [
     name: "Plastic Bottle",
     category: "recyclable",
     emoji: "🍾",
-    description: "Clean plastic bottles can be recycled",
+    description: "Empty it, rinse it, toss it in recycling. Not rocket science.",
   },
   {
     name: "Apple Core",
     category: "compostable",
     emoji: "🍎",
-    description: "Food scraps make great compost",
+    description: "Let it become dirt. Circle of life and all that.",
   },
   {
     name: "Styrofoam Cup",
     category: "trash",
     emoji: "☕",
-    description: "Most styrofoam cannot be recycled",
+    description: "Landfill fodder. Most places can't recycle this crap.",
   },
 ];
 
@@ -59,7 +59,7 @@ const ExampleImages = ({ onExampleClick }: ExampleImagesProps) => {
   return (
     <div className="mb-4 sm:mb-6">
       <h3 className="text-xs sm:text-sm font-medium text-muted-foreground mb-3 text-center">
-        Try these examples
+        Try these common headaches
       </h3>
       <div className="grid grid-cols-3 gap-2 sm:gap-3">
         {examples.map((item) => (

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Camera, MapPin, Sparkles, ArrowRight, ChevronLeft } from "lucide-react";
+import { Camera, MapPin, Sparkles, ArrowRight, ChevronLeft, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import LocationInput from "@/components/LocationInput";
@@ -39,8 +39,8 @@ const WelcomeOverlay = ({ onComplete }: WelcomeOverlayProps) => {
 
       setLocation(data.city);
       toast({
-        title: "Location detected",
-        description: `Found ${data.city} (approximate location)`,
+        title: "Found ya!",
+        description: `Looks like you're in ${data.city} (close enough)`,
       });
       return true;
     } catch (error) {
@@ -57,8 +57,8 @@ const WelcomeOverlay = ({ onComplete }: WelcomeOverlayProps) => {
       
       if (!success) {
         toast({
-          title: "Location detection failed",
-          description: "Please enter your city manually",
+          title: "Can't find you",
+          description: "Just type in your city, it's fine",
           variant: "destructive",
         });
       }
@@ -105,16 +105,16 @@ const WelcomeOverlay = ({ onComplete }: WelcomeOverlayProps) => {
 
       setLocation(city);
       toast({
-        title: "Location detected",
-        description: `Found ${city}`,
+        title: "Got it!",
+        description: `You're in ${city}`,
       });
     } catch (error) {
       const success = await tryIPBasedLocation();
       
       if (!success) {
         toast({
-          title: "Location detection failed",
-          description: "Please enter your city manually",
+          title: "Location's being difficult",
+          description: "Just type your city in manually",
           variant: "destructive",
         });
       }
@@ -126,8 +126,8 @@ const WelcomeOverlay = ({ onComplete }: WelcomeOverlayProps) => {
   const handleComplete = () => {
     if (!location.trim()) {
       toast({
-        title: "Location required",
-        description: "Please enter your city to continue",
+        title: "C'mon, where are you?",
+        description: "I need your city to give you the right rules",
         variant: "destructive",
       });
       return;
@@ -153,13 +153,13 @@ const WelcomeOverlay = ({ onComplete }: WelcomeOverlayProps) => {
         {step === 1 && (
           <>
             <div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
-              <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
+              <Trash2 className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
             </div>
             
             <div className="text-center space-y-2">
-              <h2 className="text-xl sm:text-2xl font-bold">Welcome to EcoSort</h2>
+              <h2 className="text-xl sm:text-2xl font-bold">Which Fucking Bin?</h2>
               <p className="text-sm sm:text-base text-muted-foreground">
-                Point your camera at any item to learn how to dispose of it properly
+                Finally. An app that tells you where your crap goes.
               </p>
             </div>
 
@@ -169,9 +169,9 @@ const WelcomeOverlay = ({ onComplete }: WelcomeOverlayProps) => {
                   <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                 </div>
                 <div className="text-left">
-                  <p className="font-medium text-sm sm:text-base">Location-aware rules</p>
+                  <p className="font-medium text-sm sm:text-base">Every city has different rules</p>
                   <p className="text-xs sm:text-sm text-muted-foreground">
-                    Get disposal guidance specific to your city
+                    Because apparently that makes sense
                   </p>
                 </div>
               </div>
@@ -181,9 +181,9 @@ const WelcomeOverlay = ({ onComplete }: WelcomeOverlayProps) => {
                   <Camera className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                 </div>
                 <div className="text-left">
-                  <p className="font-medium text-sm sm:text-base">Snap & classify</p>
+                  <p className="font-medium text-sm sm:text-base">Snap a pic, get the answer</p>
                   <p className="text-xs sm:text-sm text-muted-foreground">
-                    Take a photo of any item for instant analysis
+                    No more googling "can I recycle pizza box"
                   </p>
                 </div>
               </div>
@@ -193,16 +193,16 @@ const WelcomeOverlay = ({ onComplete }: WelcomeOverlayProps) => {
                   <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                 </div>
                 <div className="text-left">
-                  <p className="font-medium text-sm sm:text-base">AI-powered insights</p>
+                  <p className="font-medium text-sm sm:text-base">AI that gets it</p>
                   <p className="text-xs sm:text-sm text-muted-foreground">
-                    Ask follow-up questions about any result
+                    Ask follow-up questions when shit gets confusing
                   </p>
                 </div>
               </div>
             </div>
 
             <Button onClick={() => setStep(2)} className="w-full min-h-[48px]" size="lg">
-              Continue
+              Let's Do This
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </>
@@ -223,9 +223,9 @@ const WelcomeOverlay = ({ onComplete }: WelcomeOverlayProps) => {
             </div>
             
             <div className="text-center space-y-2">
-              <h2 className="text-xl sm:text-2xl font-bold">Set Your Location</h2>
+              <h2 className="text-xl sm:text-2xl font-bold">Where Are You?</h2>
               <p className="text-sm sm:text-base text-muted-foreground">
-                We'll use this to give you accurate local recycling rules
+                So I can look up your city's ridiculous recycling rules
               </p>
             </div>
 
@@ -238,7 +238,7 @@ const WelcomeOverlay = ({ onComplete }: WelcomeOverlayProps) => {
               />
 
               <p className="text-xs text-muted-foreground text-center">
-                You can change this later in settings
+                You can change this later if you move or whatever
               </p>
             </div>
 
@@ -248,7 +248,7 @@ const WelcomeOverlay = ({ onComplete }: WelcomeOverlayProps) => {
               size="lg"
               disabled={!location.trim()}
             >
-              Get Started
+              Let's Sort Some Trash
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </>

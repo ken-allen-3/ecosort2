@@ -8,10 +8,10 @@ const AnalysisLoading = () => {
   const [messageIndex, setMessageIndex] = useState(0);
 
   const messages = [
-    "Analyzing your item...",
-    "Identifying materials...",
-    "Checking local rules...",
-    "Preparing results...",
+    "Looking at your mystery item...",
+    "Checking what the hell this is...",
+    "Looking up your city's rules...",
+    "Almost done, hang on...",
   ];
 
   useEffect(() => {
@@ -58,7 +58,7 @@ const AnalysisLoading = () => {
         <div className="space-y-2">
           <Progress value={progress} className="h-2" />
           <p className="text-xs text-center text-muted-foreground">
-            {progress}% complete
+            {progress}% there
           </p>
         </div>
       </Card>

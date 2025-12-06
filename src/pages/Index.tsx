@@ -55,8 +55,8 @@ const Index = () => {
     
     if (!compat.isCompatible) {
       toast({
-        title: "Browser compatibility issue",
-        description: `Some features may not work properly. Please update your browser. Issues: ${compat.issues.join(', ')}`,
+        title: "Your browser is being difficult",
+        description: `Some stuff might not work. Maybe update your browser? Issues: ${compat.issues.join(', ')}`,
         variant: "destructive",
       });
     }
@@ -73,8 +73,8 @@ const Index = () => {
 
     if (!window.FileReader) {
       toast({
-        title: "Browser not supported",
-        description: "Your browser doesn't support file reading. Please update your browser.",
+        title: "What ancient browser is this?",
+        description: "Your browser can't read files. Time for an upgrade, friend.",
         variant: "destructive",
       });
       return;
@@ -82,8 +82,8 @@ const Index = () => {
 
     if (!file.type.startsWith('image/')) {
       toast({
-        title: "Invalid file type",
-        description: "Please select an image file (JPG, PNG, etc.)",
+        title: "That's not a damn picture",
+        description: "Give me an actual image file (JPG, PNG, etc.)",
         variant: "destructive",
       });
       if (fileInputRef.current) {
@@ -95,8 +95,8 @@ const Index = () => {
     const maxSize = 10 * 1024 * 1024;
     if (file.size > maxSize) {
       toast({
-        title: "File too large",
-        description: "Please select an image smaller than 10MB",
+        title: "Holy hell, that's huge",
+        description: "Keep it under 10MB, will ya?",
         variant: "destructive",
       });
       if (fileInputRef.current) {
@@ -109,8 +109,8 @@ const Index = () => {
     
     reader.onerror = () => {
       toast({
-        title: "Failed to read file",
-        description: "Please try selecting the image again",
+        title: "Well, shit",
+        description: "Couldn't read that file. Try again?",
         variant: "destructive",
       });
       if (fileInputRef.current) {
@@ -138,8 +138,8 @@ const Index = () => {
   const handleExampleClick = (item: any) => {
     if (!location) {
       toast({
-        title: "Location required",
-        description: "Please set your location first to see local disposal rules",
+        title: "Where the hell are you?",
+        description: "Set your location first so I can tell you the local rules",
         variant: "destructive",
       });
       return;
@@ -150,7 +150,7 @@ const Index = () => {
       item: item.name,
       confidence: 95,
       explanation: item.description,
-      disclaimer: `Rules may vary. Please verify with ${location}'s official waste management resources.`,
+      disclaimer: `Rules vary by city. Double-check with ${location}'s waste management if you want to be a recycling hero.`,
     });
   };
 
@@ -177,7 +177,7 @@ const Index = () => {
       localStorage.setItem("ecosort-location", trimmed);
       toast({
         title: "Location updated",
-        description: `Now using rules for ${trimmed}`,
+        description: `Alright, using ${trimmed}'s weird-ass rules now`,
       });
     }
     setIsEditingLocation(false);
@@ -186,8 +186,8 @@ const Index = () => {
   const analyzeImage = async () => {
     if (!image) {
       toast({
-        title: "No image",
-        description: "Please take or upload a photo first",
+        title: "No picture, genius",
+        description: "Take a photo first before I can tell you where it goes",
         variant: "destructive",
       });
       return;
@@ -196,8 +196,8 @@ const Index = () => {
     const trimmedLocation = location.trim();
     if (!trimmedLocation) {
       toast({
-        title: "Location required",
-        description: "Please set your location before analyzing",
+        title: "Location, please!",
+        description: "I need to know where you are to give you accurate rules",
         variant: "destructive",
       });
       return;
@@ -213,8 +213,8 @@ const Index = () => {
     const timeout = setTimeout(() => {
       if (isAnalyzing) {
         toast({
-          title: "Taking longer than expected",
-          description: "Still analyzing, please wait...",
+          title: "Still working on it...",
+          description: "This is taking longer than usual. Hang tight.",
         });
       }
     }, 15000);
@@ -237,35 +237,35 @@ const Index = () => {
         console.error("Edge function error:", error);
         
         if (error.message?.includes("429") || error.message?.includes("rate limit")) {
-          throw new Error("Service is busy. Please try again in a moment.");
+          throw new Error("Whoa there, slow down! Try again in a sec.");
         }
         if (error.message?.includes("402") || error.message?.includes("payment")) {
-          throw new Error("Service temporarily unavailable. Please try again later.");
+          throw new Error("Service is having a moment. Try again later.");
         }
         
-        throw new Error(error.message || "Classification service error");
+        throw new Error(error.message || "Something broke. Not my fault. Probably.");
       }
 
       if (!data) {
-        throw new Error("No response from classification service");
+        throw new Error("Got nothing back. The void has claimed your request.");
       }
 
       if (!data.category || !data.item) {
         console.error("Invalid response structure:", data);
-        throw new Error("Invalid response from classification service");
+        throw new Error("Got a weird response. Let's try that again.");
       }
 
       if (!["recyclable", "compostable", "trash"].includes(data.category)) {
         console.error("Invalid category:", data.category);
-        throw new Error("Invalid classification category received");
+        throw new Error("AI gave me a category I don't understand. Classic.");
       }
 
       console.log("Classification successful:", data);
       setResult(data);
       
       toast({
-        title: "Analysis complete",
-        description: `Item classified as ${data.category}`,
+        title: "Got it!",
+        description: `That goes in the ${data.category} bin`,
       });
     } catch (error) {
       clearTimeout(timeout);
@@ -273,10 +273,10 @@ const Index = () => {
       
       const errorMessage = error instanceof Error 
         ? error.message 
-        : "Could not classify the item. Please try again.";
+        : "Couldn't figure out what that is. Try again?";
       
       toast({
-        title: "Analysis failed",
+        title: "Damn it",
         description: errorMessage,
         variant: "destructive",
       });
@@ -292,8 +292,8 @@ const Index = () => {
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
         <div className="container mx-auto px-4 py-3 sm:py-4 flex items-center justify-between">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-foreground">EcoSort</h1>
-            <p className="text-xs sm:text-sm text-muted-foreground">Smart waste classification</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground">Which Fucking Bin?</h1>
+            <p className="text-xs sm:text-sm text-muted-foreground">Because recycling shouldn't be this hard</p>
           </div>
           <QuizSettings quizEnabled={quizEnabled} onToggle={setQuizEnabled} />
         </div>
@@ -353,9 +353,9 @@ const Index = () => {
                   <Camera className="w-12 h-12 sm:w-16 sm:h-16 text-primary" />
                 </div>
                 <div>
-                  <h2 className="text-lg sm:text-xl font-semibold mb-2">Ready to scan</h2>
+                  <h2 className="text-lg sm:text-xl font-semibold mb-2">What the hell is it?</h2>
                   <p className="text-muted-foreground text-sm">
-                    Point your camera at any item to get instant disposal guidance
+                    Snap a pic of your mystery trash and I'll tell you where it goes
                   </p>
                 </div>
                 <input
@@ -373,7 +373,7 @@ const Index = () => {
                   className="w-full sm:w-auto min-h-[48px]"
                 >
                   <Camera className="mr-2 h-5 w-5" />
-                  Take Photo
+                  Scan This Crap
                 </Button>
               </div>
             ) : (
@@ -394,7 +394,7 @@ const Index = () => {
                     }}
                     className="flex-1 min-h-[48px]"
                   >
-                    Retake
+                    Nope, Retake
                   </Button>
                   <Button
                     onClick={() => {
@@ -410,18 +410,18 @@ const Index = () => {
                     {isAnalyzing ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Analyzing...
+                        Figuring it out...
                       </>
                     ) : quizEnabled ? (
-                      "Start Quiz"
+                      "Test Me First"
                     ) : (
-                      "Analyze"
+                      "Where Does It Go?"
                     )}
                   </Button>
                 </div>
                 {!location && (
                   <p className="text-sm text-destructive text-center">
-                    Please set your location before analyzing
+                    Set your location first, ya dingus
                   </p>
                 )}
               </div>
@@ -432,7 +432,7 @@ const Index = () => {
 
         {!result && (
           <div className="text-center text-xs sm:text-sm text-muted-foreground px-4">
-            <p>Help reduce contamination in recycling and composting streams</p>
+            <p>Let's stop throwing recyclables in the damn trash</p>
           </div>
         )}
       </main>

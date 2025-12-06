@@ -28,7 +28,7 @@ const QuizSettings = ({ quizEnabled, onToggle }: QuizSettingsProps) => {
         <SheetHeader>
           <SheetTitle>Settings</SheetTitle>
           <SheetDescription>
-            Customize your EcoSort experience
+            Customize your experience
           </SheetDescription>
         </SheetHeader>
         <div className="mt-6 space-y-6">
@@ -38,7 +38,7 @@ const QuizSettings = ({ quizEnabled, onToggle }: QuizSettingsProps) => {
                 Quiz Mode
               </Label>
               <p className="text-sm text-muted-foreground">
-                Test your knowledge before seeing AI analysis
+                Test yourself before the AI tells you (and judges you)
               </p>
             </div>
             <Switch

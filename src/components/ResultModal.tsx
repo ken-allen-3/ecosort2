@@ -2,6 +2,7 @@ import { Recycle, Leaf, Trash2, X, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import AskQuestion from "./AskQuestion";
+
 interface ResultModalProps {
   result: {
     category: "recyclable" | "compostable" | "trash";
@@ -23,7 +24,8 @@ const ResultModal = ({ result, location, onClose }: ResultModalProps) => {
           color: "text-blue-600",
           bgColor: "bg-blue-500/10",
           borderColor: "border-blue-500/20",
-          title: "Recyclable ♻️",
+          title: "Recycling Bin ♻️",
+          subtitle: "Toss it in the blue one",
         };
       case "compostable":
         return {
@@ -31,7 +33,8 @@ const ResultModal = ({ result, location, onClose }: ResultModalProps) => {
           color: "text-green-600",
           bgColor: "bg-green-500/10",
           borderColor: "border-green-500/20",
-          title: "Compostable 🌱",
+          title: "Compost Bin 🌱",
+          subtitle: "Let it rot with dignity",
         };
       case "trash":
         return {
@@ -39,7 +42,8 @@ const ResultModal = ({ result, location, onClose }: ResultModalProps) => {
           color: "text-gray-600",
           bgColor: "bg-gray-500/10",
           borderColor: "border-gray-500/20",
-          title: "Trash 🗑️",
+          title: "Trash Bin 🗑️",
+          subtitle: "Into the landfill it goes",
         };
     }
   };
@@ -53,7 +57,7 @@ const ResultModal = ({ result, location, onClose }: ResultModalProps) => {
         {/* Header */}
         <div className="border-b border-border bg-card/50 backdrop-blur-sm">
           <div className="container mx-auto px-4 py-3 sm:py-4 flex items-center justify-between">
-            <h2 className="text-lg sm:text-xl font-bold">Analysis Result</h2>
+            <h2 className="text-lg sm:text-xl font-bold">The Verdict</h2>
             <Button variant="ghost" size="icon" onClick={onClose} className="min-h-[44px] min-w-[44px]">
               <X className="w-5 h-5" />
             </Button>
@@ -69,10 +73,11 @@ const ResultModal = ({ result, location, onClose }: ResultModalProps) => {
                 <Icon className={`w-12 h-12 ${config.color}`} />
               </div>
               <h3 className="text-3xl font-bold mb-2">{config.title}</h3>
-              <p className="text-xl text-muted-foreground mb-2">{result.item}</p>
+              <p className="text-lg text-muted-foreground mb-1">{config.subtitle}</p>
+              <p className="text-xl text-foreground font-medium mb-2">{result.item}</p>
               <div className="inline-flex items-center gap-2 text-sm text-muted-foreground">
                 <span className="font-medium">
-                  {result.confidence > 1 ? result.confidence : (result.confidence * 100).toFixed(0)}% confidence
+                  {result.confidence > 1 ? result.confidence : (result.confidence * 100).toFixed(0)}% sure about this
                 </span>
               </div>
             </Card>
@@ -81,7 +86,7 @@ const ResultModal = ({ result, location, onClose }: ResultModalProps) => {
             <Card className="p-6">
               <h4 className="font-semibold mb-3 flex items-center gap-2">
                 <div className={`w-2 h-2 rounded-full ${config.color === 'text-blue-600' ? 'bg-blue-600' : config.color === 'text-green-600' ? 'bg-green-600' : 'bg-gray-600'}`}></div>
-                Why this classification?
+                Why? Here's the deal:
               </h4>
               <p className="text-muted-foreground leading-relaxed">{result.explanation}</p>
             </Card>
@@ -91,7 +96,7 @@ const ResultModal = ({ result, location, onClose }: ResultModalProps) => {
               <Card className="p-6 bg-primary/5 border-primary/20">
                 <h4 className="font-semibold mb-3 flex items-center gap-2">
                   <MapPin className="w-4 h-4 text-primary" />
-                  Local rules for {location}
+                  {location}'s special rules (of course they have some)
                 </h4>
                 <p className="text-muted-foreground leading-relaxed">{result.municipalNotes}</p>
               </Card>
@@ -103,10 +108,10 @@ const ResultModal = ({ result, location, onClose }: ResultModalProps) => {
             {/* Action Buttons */}
             <div className="space-y-3 pt-2 sm:pt-4">
               <Button onClick={onClose} className="w-full min-h-[48px]" size="lg">
-                Analyze Another Item
+                Got More Trash to Sort
               </Button>
               <p className="text-center text-xs sm:text-sm text-muted-foreground">
-                Help reduce contamination in recycling streams
+                One less item in the wrong bin. You're killing it.
               </p>
             </div>
           </div>

@@ -42,7 +42,7 @@ const AskQuestion = ({ result, location }: AskQuestionProps) => {
 
       if (error) {
         console.error("Error asking question:", error);
-        toast.error("Failed to get an answer. Please try again.");
+        toast.error("Damn, couldn't get an answer. Try again?");
         return;
       }
 
@@ -56,7 +56,7 @@ const AskQuestion = ({ result, location }: AskQuestionProps) => {
       }
     } catch (err) {
       console.error("Error:", err);
-      toast.error("Something went wrong. Please try again.");
+      toast.error("Something went wrong. Give it another shot.");
     } finally {
       setIsLoading(false);
     }
@@ -77,7 +77,7 @@ const AskQuestion = ({ result, location }: AskQuestionProps) => {
         className="w-full min-h-[48px] gap-2"
       >
         <MessageCircle className="w-4 h-4" />
-        Have a question about this result?
+        Wait, I have questions about this
       </Button>
     );
   }
@@ -87,7 +87,7 @@ const AskQuestion = ({ result, location }: AskQuestionProps) => {
       <div className="flex items-center justify-between">
         <h4 className="font-medium flex items-center gap-2">
           <MessageCircle className="w-4 h-4 text-primary" />
-          Ask a follow-up question
+          What's confusing you?
         </h4>
         <Button
           variant="ghost"
@@ -111,17 +111,17 @@ const AskQuestion = ({ result, location }: AskQuestionProps) => {
               }`}
             >
               <p className="text-xs font-medium mb-1 text-muted-foreground">
-                {msg.role === "user" ? "You" : "AI Assistant"}
+                {msg.role === "user" ? "You" : "Bin Expert"}
               </p>
               <p className="leading-relaxed">{msg.content}</p>
             </div>
           ))}
           {isLoading && (
             <div className="bg-card text-foreground mr-4 border border-border p-3 rounded-lg">
-              <p className="text-xs font-medium mb-1 text-muted-foreground">AI Assistant</p>
+              <p className="text-xs font-medium mb-1 text-muted-foreground">Bin Expert</p>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Loader2 className="w-3 h-3 animate-spin" />
-                Thinking...
+                Let me think about that...
               </div>
             </div>
           )}
@@ -133,7 +133,7 @@ const AskQuestion = ({ result, location }: AskQuestionProps) => {
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="e.g., What if the pizza box was for a frozen pizza and had no grease?"
+          placeholder="e.g., What if it had food on it? Does my city even take this?"
           className="min-h-[44px] resize-none text-sm"
           rows={2}
           disabled={isLoading}
@@ -153,7 +153,7 @@ const AskQuestion = ({ result, location }: AskQuestionProps) => {
       </div>
 
       <p className="text-xs text-muted-foreground">
-        Ask about specific circumstances, materials, or local rules
+        Ask about weird scenarios, materials, or your city's special rules
       </p>
     </div>
   );
