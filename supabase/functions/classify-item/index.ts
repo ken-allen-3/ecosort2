@@ -5,116 +5,6 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Municipal rules database (expandable)
-const municipalRules: Record<string, Record<string, string>> = {
-  default: {
-    "pizza box": "If greasy, goes in trash. If clean, can be recycled.",
-    "plastic bag": "Not accepted in curbside recycling. Take to store drop-off.",
-    "glass bottle": "Rinse before recycling. Remove caps.",
-    "food scraps": "Suitable for composting if your city has a program.",
-  },
-  "san ramon": {
-    "pizza box": "Accepted in organics cart even if greasy. Remove any plastic liners first.",
-    "plastic bag": "Not accepted in blue recycling cart. Take to participating grocery stores for recycling.",
-    "glass bottle": "Place in blue recycling cart. Rinse and remove caps. No broken glass.",
-    "food scraps": "Place in green organics cart. Includes all food waste, meat, dairy, and bones.",
-    "cardboard": "Flatten and place in blue recycling cart. Remove tape and labels when possible.",
-    "styrofoam": "Not recyclable. Place in black trash cart.",
-    "plastic container": "Only #1-5 and #7 plastics accepted. Rinse clean and remove lids.",
-    "yard waste": "Place in green organics cart. No plastic bags - use paper yard waste bags only.",
-    "batteries": "Never place in any cart. Drop off at Household Hazardous Waste facility.",
-    "electronics": "Schedule special pickup or drop off at Dublin Transfer Station.",
-  },
-  "danville": {
-    "pizza box": "Clean boxes in blue recycling cart. Greasy boxes and food residue go in green organics cart.",
-    "plastic bag": "Not accepted curbside. Return to grocery stores or use reusable bags.",
-    "glass bottle": "Place in blue recycling cart. Rinse and keep lids/caps on.",
-    "food scraps": "All food waste goes in green organics cart including meat, bones, and dairy.",
-    "cardboard": "Flatten and place in blue recycling cart. Remove all packing materials.",
-    "styrofoam": "Not recyclable. Place in black trash cart.",
-    "plastic container": "Plastics #1-7 accepted. Rinse and keep lids on.",
-    "yard waste": "Place in green organics cart. Branches under 3 feet. No plastic bags.",
-    "batteries": "Household batteries to Household Hazardous Waste facility. Call (925) 906-1801.",
-    "electronics": "Schedule bulky item pickup or take to Dublin Transfer Station.",
-  },
-  "walnut creek": {
-    "pizza box": "Soiled boxes in green organics cart. Clean boxes in blue recycling cart.",
-    "plastic bag": "Not accepted curbside. Take to store drop-off locations.",
-    "glass bottle": "Place in blue recycling cart. Rinse clean, lids optional.",
-    "food scraps": "All food waste in green organics cart. Includes meat, dairy, bones, grease.",
-    "cardboard": "Flatten and place in blue recycling cart. Remove tape when possible.",
-    "styrofoam": "Not recyclable. Place in black trash cart.",
-    "plastic container": "Plastics #1-7 accepted. Empty and rinse. Lids may stay on.",
-    "yard waste": "Place in green organics cart. Branches must be under 4 feet long.",
-    "batteries": "Take to Republic Services customer service center or household hazardous waste events.",
-    "electronics": "Call (925) 906-6600 for bulky pickup or drop at Concord transfer station.",
-  },
-  "pleasanton": {
-    "pizza box": "Food-soiled boxes go in green organics cart. Clean boxes in blue recycling cart.",
-    "plastic bag": "Not recyclable curbside. Recycle at participating retail locations.",
-    "glass bottle": "Place in blue recycling cart. Rinse and remove caps.",
-    "food scraps": "All food waste accepted in green organics cart including oils and fats.",
-    "cardboard": "Flatten and place in blue recycling cart. Remove non-paper materials.",
-    "styrofoam": "Not recyclable in Pleasanton. Place in black trash cart.",
-    "plastic container": "Plastics #1-7 accepted. Rinse clean and remove lids.",
-    "yard waste": "Place in green organics cart. Branches under 3 feet and 3 inches diameter.",
-    "batteries": "Never in carts. Drop off at household hazardous waste collection events.",
-    "electronics": "Schedule bulky item pickup online or call (925) 417-0700.",
-  },
-  "livermore": {
-    "pizza box": "Soiled boxes in green organics bin. Clean boxes in blue recycling bin.",
-    "plastic bag": "Not accepted curbside. Return to grocery stores for recycling.",
-    "glass bottle": "Place in blue recycling bin. Rinse and leave caps on.",
-    "food scraps": "All food waste in green organics bin. Includes meat, dairy, and cooking oil.",
-    "cardboard": "Flatten and place in blue recycling bin. Remove packing materials.",
-    "styrofoam": "Not recyclable. Place in black trash bin.",
-    "plastic container": "Plastics #1-7 accepted. Rinse and keep lids on containers.",
-    "yard waste": "Place in green organics bin. Branches must be bundled and under 4 feet.",
-    "batteries": "Take to Livermore Transfer Station or household hazardous waste events.",
-    "electronics": "Schedule free bulky pickup or drop at transfer station.",
-  },
-  "dublin": {
-    "pizza box": "Food residue in green organics cart. Clean boxes in blue recycling cart.",
-    "plastic bag": "Not recyclable curbside. Return to retail drop-off locations.",
-    "glass bottle": "Place in blue recycling cart. Rinse and keep caps on.",
-    "food scraps": "All food waste goes in green organics cart including bones and grease.",
-    "cardboard": "Flatten and place in blue recycling cart. Remove tape and labels.",
-    "styrofoam": "Not recyclable. Place in black trash cart.",
-    "plastic container": "Plastics #1-7 accepted. Rinse clean and leave lids on.",
-    "yard waste": "Place in green organics cart. Branches under 3 feet long.",
-    "batteries": "Drop off at Dublin Transfer Station. Never place in any cart.",
-    "electronics": "Free curbside pickup - schedule online at www.republicservices.com",
-  },
-  "long beach": {
-    "pizza box": "Grease-free boxes in blue recycling bin. Greasy boxes and scraps go in green organics bin.",
-    "plastic bag": "Not accepted curbside. Recycle at retail stores or use reusable bags.",
-    "glass bottle": "All colors accepted in blue recycling bin. Rinse and keep caps on.",
-    "food scraps": "All food waste accepted in green organics bin including meat, dairy, and grease.",
-    "cardboard": "Flatten boxes and place in blue recycling bin. Remove packing materials.",
-    "styrofoam": "Not recyclable in Long Beach. Place in black trash bin.",
-    "plastic container": "Empty, clean, and dry plastics #1-7 accepted. Leave caps on bottles.",
-    "yard waste": "Place in green organics bin. Branches must be under 3 feet long and 3 inches diameter.",
-    "batteries": "Place in clear bag on top of blue recycling bin or drop at EDCO stations.",
-    "electronics": "Free curbside pickup - schedule online or call (562) 570-2876.",
-    "motor oil": "Never pour down drain. Take to any AutoZone or EDCO station for free recycling.",
-    "textiles": "Clothing and fabrics accepted in blue bin if clean and dry. Place in clear plastic bag.",
-  },
-  "cincinnati": {
-    "pizza box": "Clean boxes can be recycled. Greasy boxes go in trash.",
-    "plastic bag": "Not accepted curbside. Return to grocery stores for recycling.",
-    "glass bottle": "All colors accepted in recycling cart. Rinse and leave caps/lids on.",
-    "food scraps": "Not collected curbside. Consider home composting or drop-off sites.",
-    "cardboard": "Flatten and place in recycling cart. Remove packing materials and tape.",
-    "styrofoam": "Not recyclable in Cincinnati. Place in trash cart.",
-    "plastic container": "Plastics #1-5 accepted. Rinse clean and leave lids on.",
-    "yard waste": "Bundle branches or use paper bags. Set out separately from trash. 4 foot length limit.",
-    "batteries": "Never in trash or recycling. Drop off at Rumpke Recycling Center or hazardous waste events.",
-    "electronics": "Free curbside pickup for TVs and electronics. Call (513) 591-6000 to schedule.",
-    "aluminum can": "Rinse and place in recycling cart. No need to crush.",
-    "newspaper": "Bundle or place loose in recycling cart. Keep dry.",
-  },
-};
-
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -156,9 +46,10 @@ serve(async (req) => {
       );
     }
 
-    console.log("Classifying item for location:", location || "default");
+    const cityName = location.trim();
+    console.log("Classifying item for location:", cityName);
 
-    // Call Lovable AI with vision model
+    // Call Lovable AI with vision model - include location in prompt for AI knowledge
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -170,17 +61,26 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `You are an expert waste management classifier. Analyze images and classify items into one of three categories:
-- recyclable: Items that can be recycled (paper, cardboard, metal cans, glass bottles, rigid plastics)
-- compostable: Organic materials that can be composted (food scraps, yard waste, compostable packaging)
-- trash: Everything else (mixed materials, contaminated items, non-recyclable plastics)
+            content: `You are an expert waste management classifier with knowledge of recycling programs across the United States. 
+
+The user is located in ${cityName}. Use your knowledge of local recycling rules, waste management programs, and municipal guidelines for this area when classifying items.
+
+Analyze images and classify items into one of three categories:
+- recyclable: Items that can be recycled in standard curbside programs
+- compostable: Organic materials that can be composted (if the city has a composting program)
+- trash: Everything else (mixed materials, contaminated items, non-recyclable items)
+
+Consider local factors like:
+- Whether the city has curbside composting/organics programs
+- Local rules about pizza boxes, plastic bags, glass, styrofoam
+- Any specific recycling restrictions or requirements for this area
 
 Return a JSON object with:
 {
   "category": "recyclable" | "compostable" | "trash",
   "item": "brief description of the item",
   "confidence": 0.0 to 1.0,
-  "explanation": "why this item falls into this category"
+  "explanation": "why this item falls into this category, including any location-specific considerations for ${cityName}"
 }`,
           },
           {
@@ -188,7 +88,7 @@ Return a JSON object with:
             content: [
               {
                 type: "text",
-                text: "What is this item and how should it be disposed of?",
+                text: `I'm in ${cityName}. What is this item and how should I dispose of it according to local rules?`,
               },
               {
                 type: "image_url",
@@ -262,30 +162,8 @@ Return a JSON object with:
       throw new Error("Incomplete classification result");
     }
 
-    // Add municipal notes if available
-    const itemLower = result.item.toLowerCase();
-    const locationKey = (location || "default").toLowerCase().trim();
-    const locationRules = municipalRules[locationKey] || municipalRules.default;
-    
-    console.log("Looking up rules for location:", locationKey);
-    
-    // Find the most specific matching rule
-    let bestMatch = "";
-    let bestMatchLength = 0;
-    
-    for (const [key, note] of Object.entries(locationRules)) {
-      if (itemLower.includes(key) && key.length > bestMatchLength) {
-        result.municipalNotes = note;
-        bestMatch = key;
-        bestMatchLength = key.length;
-      }
-    }
-    
-    if (bestMatch) {
-      console.log("Found municipal note for:", bestMatch);
-    } else {
-      console.log("No specific municipal note found, using general classification");
-    }
+    // Add disclaimer about verifying with local authorities
+    result.disclaimer = `Rules may vary. Please verify with ${cityName}'s official waste management resources.`;
 
     console.log("Returning final result:", result);
 
