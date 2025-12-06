@@ -285,10 +285,14 @@ const Index = () => {
     }
   };
 
+  const hasCompletedOnboarding = !!location;
+
   return (
     <div className="min-h-screen bg-background">
       <WelcomeOverlay onComplete={handleOnboardingComplete} />
       
+      {hasCompletedOnboarding && (
+        <>
       <header className="border-b-2 border-border bg-card/80 backdrop-blur-sm sticky top-0 z-10">
         <div className="container mx-auto px-4 py-3 sm:py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -387,9 +391,6 @@ const Index = () => {
                   <label htmlFor="quiz-toggle" className="text-sm font-medium text-foreground cursor-pointer">
                     Test Your Fucking Knowledge
                   </label>
-                  <label htmlFor="quiz-toggle" className="text-sm text-muted-foreground cursor-pointer">
-                    Quiz Mode
-                  </label>
                   <button
                     id="quiz-toggle"
                     role="switch"
@@ -408,7 +409,7 @@ const Index = () => {
                     />
                   </button>
                   <span className="text-xs text-muted-foreground">
-                    {quizEnabled ? '🧠 ON' : 'OFF'}
+                    {quizEnabled ? 'ON' : 'OFF'}
                   </span>
                 </div>
               </div>
@@ -496,6 +497,8 @@ const Index = () => {
             setImage(null);
           }}
         />
+      )}
+      </>
       )}
     </div>
   );
