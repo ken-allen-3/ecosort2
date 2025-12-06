@@ -8,6 +8,7 @@ interface ClassificationResult {
   confidence: number;
   explanation: string;
   municipalNotes?: string;
+  disclaimer?: string;
 }
 
 interface ResultCardProps {
@@ -58,12 +59,9 @@ const ResultCard = ({ result }: ResultCardProps) => {
           <p className="text-sm text-muted-foreground">{result.explanation}</p>
         </div>
 
-        {result.municipalNotes && (
+        {result.disclaimer && (
           <div className="border-t pt-3">
-            <h4 className="font-medium mb-1 flex items-center gap-2">
-              <span>Local Rules</span>
-            </h4>
-            <p className="text-sm text-muted-foreground">{result.municipalNotes}</p>
+            <p className="text-xs text-muted-foreground italic">{result.disclaimer}</p>
           </div>
         )}
       </div>
