@@ -343,7 +343,7 @@ const Index = () => {
           </div>
         )}
 
-        {!image && !result && <ExampleImages onExampleClick={handleExampleClick} />}
+        
 
         {showQuiz && image && location ? (
           <Card className="p-4 sm:p-6 animate-drop">
@@ -466,6 +466,8 @@ const Index = () => {
           </div>
           </Card>
         )}
+
+        {!image && !result && <ExampleImages onExampleClick={handleExampleClick} />}
 
         {!result && (
           <div className="text-center text-xs sm:text-sm text-muted-foreground px-4">
