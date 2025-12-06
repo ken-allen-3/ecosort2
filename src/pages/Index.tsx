@@ -300,7 +300,7 @@ const Index = () => {
               <p className="text-xs sm:text-sm text-muted-foreground">Because recycling shouldn't be this hard</p>
             </div>
           </div>
-          <QuizSettings quizEnabled={quizEnabled} onToggle={setQuizEnabled} />
+          {/* Settings removed - quiz toggle now visible below scan button */}
         </div>
       </header>
 
@@ -380,6 +380,33 @@ const Index = () => {
                   <Camera className="mr-2 h-5 w-5" />
                   Scan This Crap 📸
                 </Button>
+                
+                {/* Quiz mode toggle */}
+                <div className="flex items-center justify-center gap-3 pt-2">
+                  <label htmlFor="quiz-toggle" className="text-sm text-muted-foreground cursor-pointer">
+                    Quiz Mode
+                  </label>
+                  <button
+                    id="quiz-toggle"
+                    role="switch"
+                    aria-checked={quizEnabled}
+                    onClick={() => setQuizEnabled(!quizEnabled)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full border-2 transition-colors ${
+                      quizEnabled 
+                        ? 'bg-primary border-primary' 
+                        : 'bg-muted border-border'
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-foreground transition-transform ${
+                        quizEnabled ? 'translate-x-5' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
+                  <span className="text-xs text-muted-foreground">
+                    {quizEnabled ? '🧠 ON' : 'OFF'}
+                  </span>
+                </div>
               </div>
             ) : (
               <div className="space-y-4 animate-drop">
