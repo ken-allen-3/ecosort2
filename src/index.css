@@ -7,8 +7,8 @@
    All colors MUST be HSL.
 */
 
-/* Import bold condensed font for headlines */
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap');
+/* Import bold geometric font for headlines */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap');
 
 @layer base {
   :root {
@@ -130,8 +130,9 @@
 
   /* Bold headline font */
   h1, h2, h3, .font-display {
-    font-family: 'Bebas Neue', 'Impact', sans-serif;
-    letter-spacing: 0.02em;
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.01em;
     text-transform: uppercase;
   }
 
