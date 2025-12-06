@@ -25,22 +25,22 @@ const QuizResult = ({ userGuess, correctAnswer, onContinue }: QuizResultProps) =
 
       <div className="text-center space-y-2">
         <h3 className="text-xl font-bold">
-          {isCorrect ? "Correct!" : "Not quite!"}
+          {isCorrect ? "Hell yeah!" : "Nope, not quite!"}
         </h3>
         <p className="text-muted-foreground">
           {isCorrect ? (
-            <>You guessed <span className="font-semibold text-foreground">{userGuess}</span> and that's correct!</>
+            <>You said <span className="font-semibold text-foreground">{userGuess}</span> and you nailed it!</>
           ) : (
             <>
-              You guessed <span className="font-semibold text-foreground">{userGuess}</span>, but the correct answer is{" "}
-              <span className="font-semibold text-foreground">{correctAnswer}</span>.
+              You guessed <span className="font-semibold text-foreground">{userGuess}</span>, but it's actually{" "}
+              <span className="font-semibold text-foreground">{correctAnswer}</span>. It happens.
             </>
           )}
         </p>
       </div>
 
       <Button onClick={onContinue} className="w-full" size="lg">
-        See Detailed Analysis
+        Show Me the Details
         <ArrowRight className="ml-2 h-4 w-4" />
       </Button>
     </Card>

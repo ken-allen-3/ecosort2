@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Recycle, Leaf, Trash2, CheckCircle2, XCircle } from "lucide-react";
+import { Recycle, Leaf, Trash2, CheckCircle2 } from "lucide-react";
 
 interface QuizModeProps {
   image: string;
@@ -20,7 +20,7 @@ const QuizMode = ({ image, onComplete, onSkip }: QuizModeProps) => {
   const categories = [
     {
       id: "recyclable" as Category,
-      label: "Recyclable",
+      label: "Recycling",
       icon: Recycle,
       color: "text-recyclable",
       bgColor: "bg-recyclable/10",
@@ -28,7 +28,7 @@ const QuizMode = ({ image, onComplete, onSkip }: QuizModeProps) => {
     },
     {
       id: "compostable" as Category,
-      label: "Compostable",
+      label: "Compost",
       icon: Leaf,
       color: "text-compostable",
       bgColor: "bg-compostable/10",
@@ -119,9 +119,9 @@ const QuizMode = ({ image, onComplete, onSkip }: QuizModeProps) => {
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="text-center space-y-2">
-        <h2 className="text-2xl font-bold text-foreground">Quiz Mode</h2>
+        <h2 className="text-2xl font-bold text-foreground">Quick, Where Does It Go?</h2>
         <p className="text-muted-foreground">
-          Where should this item go? Drag or tap to make your guess.
+          Think you know? Drag it or tap to make your guess.
         </p>
       </div>
 
@@ -191,14 +191,14 @@ const QuizMode = ({ image, onComplete, onSkip }: QuizModeProps) => {
       {/* Action Buttons */}
       <div className="flex gap-3">
         <Button variant="outline" onClick={onSkip} className="flex-1">
-          Skip Quiz
+          Just Tell Me
         </Button>
         <Button
           onClick={handleSubmit}
           disabled={!selectedCategory}
           className="flex-1"
         >
-          Submit Guess
+          Lock It In
         </Button>
       </div>
     </div>

@@ -29,22 +29,27 @@ serve(async (req) => {
       );
     }
 
-    const systemPrompt = `You are a helpful waste sorting expert assistant. The user has just scanned an item and received a classification result. They have a follow-up question about it.
+    const systemPrompt = `You are the "Bin Expert" for the app "Which Fucking Bin?" - a snarky but genuinely helpful waste sorting assistant. You share the user's frustration with confusing recycling rules while giving accurate, actionable advice.
 
-Here's the context from the scan:
+Here's the context from their recent scan:
 - Item identified: ${result.item}
-- Classification: ${result.category} (${result.category === 'recyclable' ? 'goes in recycling' : result.category === 'compostable' ? 'goes in compost' : 'goes in trash'})
+- Classification: ${result.category} (goes in ${result.category === 'recyclable' ? 'recycling' : result.category === 'compostable' ? 'compost' : 'trash'})
 - Confidence: ${result.confidence > 1 ? result.confidence : (result.confidence * 100).toFixed(0)}%
 - Original explanation: ${result.explanation}
 ${result.municipalNotes ? `- Local rules for ${location}: ${result.municipalNotes}` : ''}
 ${location ? `- User's location: ${location}` : ''}
 
-Guidelines for your response:
-- Be concise and helpful (2-4 sentences typically)
-- If their question suggests the item might be different than what was scanned (like a frozen pizza box vs a used pizza box), acknowledge the difference and provide accurate guidance
+Your personality:
+- You curse casually (damn, shit, hell, crap, ass, fuck) but stay helpful
+- You're sympathetic - recycling IS confusing and you get it
+- You acknowledge when rules are stupid or vary by location
+- You give clear, actionable answers in 2-4 sentences
+
+Guidelines:
+- If their question suggests the item might be different than what was scanned (like a frozen pizza box vs a used pizza box), acknowledge the difference and update your guidance
 - Consider local recycling rules when relevant
-- If you're unsure, say so and suggest they check with their local waste management
-- Be encouraging about proper waste sorting`;
+- If you genuinely don't know, admit it and suggest they check with their local waste management
+- Be encouraging - sorting waste correctly matters, even if the rules are a pain in the ass`;
 
     console.log('Sending question to Lovable AI:', question);
 
@@ -69,19 +74,19 @@ Guidelines for your response:
       
       if (response.status === 429) {
         return new Response(
-          JSON.stringify({ error: 'Too many requests. Please try again in a moment.' }),
+          JSON.stringify({ error: 'Hold up, too many questions! Give it a sec.' }),
           { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
       if (response.status === 402) {
         return new Response(
-          JSON.stringify({ error: 'AI service temporarily unavailable.' }),
+          JSON.stringify({ error: 'AI is taking a break. Try again later.' }),
           { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
       
       return new Response(
-        JSON.stringify({ error: 'Failed to get AI response' }),
+        JSON.stringify({ error: 'Couldn\'t get an answer. Try again?' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -92,7 +97,7 @@ Guidelines for your response:
     if (!answer) {
       console.error('No answer in AI response:', data);
       return new Response(
-        JSON.stringify({ error: 'No response from AI' }),
+        JSON.stringify({ error: 'Got nothing back. Weird. Try again?' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -107,7 +112,7 @@ Guidelines for your response:
   } catch (error) {
     console.error('Error in ask-about-result:', error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Something broke. Try again?' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

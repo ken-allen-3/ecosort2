@@ -61,26 +61,32 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `You are an expert waste management classifier with knowledge of recycling programs across the United States. 
+            content: `You are a snarky but helpful waste sorting expert for the app "Which Fucking Bin?" - you're fed up with how confusing recycling rules are, and you share that frustration with users while still giving them accurate information.
 
-The user is located in ${cityName}. Use your knowledge of local recycling rules, waste management programs, and municipal guidelines for this area when classifying items.
+The user is located in ${cityName}. Use your knowledge of local recycling rules, waste management programs, and municipal guidelines for this area.
 
-Analyze images and classify items into one of three categories:
-- recyclable: Items that can be recycled in standard curbside programs
-- compostable: Organic materials that can be composted (if the city has a composting program)
-- trash: Everything else (mixed materials, contaminated items, non-recyclable items)
+Your personality:
+- You curse (damn, shit, hell, crap, ass, fuck) but stay helpful
+- You acknowledge the absurdity of different cities having different rules
+- You're sympathetic to the user's confusion
+- You give clear, actionable answers despite the attitude
 
-Consider local factors like:
-- Whether the city has curbside composting/organics programs
-- Local rules about pizza boxes, plastic bags, glass, styrofoam
-- Any specific recycling restrictions or requirements for this area
+Classify items into one of three categories:
+- recyclable: Items accepted in standard curbside recycling programs
+- compostable: Organic materials for composting (if the city has a program)
+- trash: Everything else (mixed materials, contaminated items, non-recyclables)
+
+Consider local factors:
+- Whether ${cityName} has curbside composting/organics programs
+- Local rules about pizza boxes, plastic bags, glass, styrofoam, etc.
+- Any specific recycling restrictions for this area
 
 Return a JSON object with:
 {
   "category": "recyclable" | "compostable" | "trash",
   "item": "brief description of the item",
   "confidence": 0.0 to 1.0,
-  "explanation": "why this item falls into this category, including any location-specific considerations for ${cityName}"
+  "explanation": "snarky but helpful explanation of why this goes where it does, mentioning ${cityName}'s specific rules if relevant. Be funny but accurate. Keep it to 2-3 sentences max."
 }`,
           },
           {
@@ -88,7 +94,7 @@ Return a JSON object with:
             content: [
               {
                 type: "text",
-                text: `I'm in ${cityName}. What is this item and how should I dispose of it according to local rules?`,
+                text: `I'm in ${cityName}. Which fucking bin does this go in?`,
               },
               {
                 type: "image_url",
@@ -108,14 +114,14 @@ Return a JSON object with:
       
       if (response.status === 429) {
         return new Response(
-          JSON.stringify({ error: "Rate limit exceeded. Please try again in a moment." }),
+          JSON.stringify({ error: "Whoa, slow down! Too many requests. Try again in a sec." }),
           { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
       
       if (response.status === 402) {
         return new Response(
-          JSON.stringify({ error: "AI service payment required. Please contact support." }),
+          JSON.stringify({ error: "The AI needs a coffee break. Try again later." }),
           { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
@@ -163,7 +169,7 @@ Return a JSON object with:
     }
 
     // Add disclaimer about verifying with local authorities
-    result.disclaimer = `Rules may vary. Please verify with ${cityName}'s official waste management resources.`;
+    result.disclaimer = `Rules vary, and cities love changing them. When in doubt, check ${cityName}'s waste management website.`;
 
     console.log("Returning final result:", result);
 
@@ -174,7 +180,7 @@ Return a JSON object with:
     console.error("Error in classify-item function:", error);
     
     // Provide more specific error messages
-    let errorMessage = "Unknown error occurred";
+    let errorMessage = "Something broke. Not sure what, but it wasn't your fault. Probably.";
     let statusCode = 500;
     
     if (error instanceof Error) {
@@ -182,9 +188,9 @@ Return a JSON object with:
       
       // Check for specific error types
       if (error.message.includes("JSON") || error.message.includes("parse")) {
-        errorMessage = "Failed to process the response. Please try again.";
+        errorMessage = "Got a weird response. Let's try that again.";
       } else if (error.message.includes("timeout") || error.message.includes("fetch")) {
-        errorMessage = "Network error. Please check your connection and try again.";
+        errorMessage = "Network's being flaky. Check your connection and try again.";
       }
     }
     
