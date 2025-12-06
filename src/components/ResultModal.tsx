@@ -1,6 +1,8 @@
-import { Recycle, Leaf, Trash2, X, MapPin } from "lucide-react";
+import { useState } from "react";
+import { Recycle, Leaf, Trash2, X, MapPin, Share2, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { toast } from "sonner";
 import AskQuestion from "./AskQuestion";
 
 interface ResultModalProps {
@@ -16,6 +18,8 @@ interface ResultModalProps {
 }
 
 const ResultModal = ({ result, location, onClose }: ResultModalProps) => {
+  const [copied, setCopied] = useState(false);
+
   const getCategoryConfig = () => {
     switch (result.category) {
       case "recyclable":
@@ -26,6 +30,7 @@ const ResultModal = ({ result, location, onClose }: ResultModalProps) => {
           borderColor: "border-blue-500/20",
           title: "Recycling Bin ♻️",
           subtitle: "Toss it in the blue one",
+          emoji: "♻️",
         };
       case "compostable":
         return {
@@ -35,6 +40,7 @@ const ResultModal = ({ result, location, onClose }: ResultModalProps) => {
           borderColor: "border-green-500/20",
           title: "Compost Bin 🌱",
           subtitle: "Let it rot with dignity",
+          emoji: "🌱",
         };
       case "trash":
         return {
@@ -44,7 +50,48 @@ const ResultModal = ({ result, location, onClose }: ResultModalProps) => {
           borderColor: "border-gray-500/20",
           title: "Trash Bin 🗑️",
           subtitle: "Into the landfill it goes",
+          emoji: "🗑️",
         };
+    }
+  };
+
+  const getShareText = () => {
+    const binName = result.category === "recyclable" ? "recycling" : result.category === "compostable" ? "compost" : "trash";
+    const phrases = [
+      `Finally figured out where my ${result.item} goes: the fucking ${binName} bin ${config.emoji}`,
+      `Plot twist: ${result.item} goes in ${binName} ${config.emoji} Who knew?`,
+      `Asked "Which Fucking Bin?" and learned my ${result.item} belongs in ${binName} ${config.emoji}`,
+      `TIL my ${result.item} goes in the ${binName} bin. Thanks, Which Fucking Bin? ${config.emoji}`,
+    ];
+    return phrases[Math.floor(Math.random() * phrases.length)];
+  };
+
+  const handleShare = async () => {
+    const shareText = getShareText();
+    
+    // Try native share API first (mobile)
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: "Which Fucking Bin?",
+          text: shareText,
+          url: window.location.origin,
+        });
+        return;
+      } catch (err) {
+        // User cancelled or share failed, fall back to clipboard
+        if ((err as Error).name === "AbortError") return;
+      }
+    }
+    
+    // Fall back to clipboard
+    try {
+      await navigator.clipboard.writeText(`${shareText}\n\n${window.location.origin}`);
+      setCopied(true);
+      toast.success("Copied to clipboard! Now go paste it somewhere.");
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      toast.error("Couldn't copy. Your browser's being difficult.");
     }
   };
 
@@ -107,11 +154,25 @@ const ResultModal = ({ result, location, onClose }: ResultModalProps) => {
 
             {/* Action Buttons */}
             <div className="space-y-3 pt-2 sm:pt-4">
-              <Button onClick={onClose} className="w-full min-h-[48px]" size="lg">
-                Got More Trash to Sort
-              </Button>
+              <div className="flex gap-3">
+                <Button onClick={onClose} className="flex-1 min-h-[48px]" size="lg">
+                  Got More Trash
+                </Button>
+                <Button 
+                  onClick={handleShare} 
+                  variant="outline" 
+                  className="min-h-[48px] min-w-[48px]"
+                  size="icon"
+                >
+                  {copied ? (
+                    <Check className="w-5 h-5 text-green-500" />
+                  ) : (
+                    <Share2 className="w-5 h-5" />
+                  )}
+                </Button>
+              </div>
               <p className="text-center text-xs sm:text-sm text-muted-foreground">
-                One less item in the wrong bin. You're killing it.
+                Share this revelation or keep sorting. You're killing it either way.
               </p>
             </div>
           </div>
