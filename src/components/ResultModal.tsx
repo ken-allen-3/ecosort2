@@ -1,6 +1,6 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import html2canvas from "html2canvas";
-import { Recycle, Leaf, Trash2, X, MapPin, Share2, Check, Camera, Download } from "lucide-react";
+import { Recycle, Leaf, Trash2, X, MapPin, Share2, Check, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
@@ -23,7 +23,7 @@ const ResultModal = ({ result, location, onClose }: ResultModalProps) => {
   const [isCapturing, setIsCapturing] = useState(false);
   const shareCardRef = useRef<HTMLDivElement>(null);
 
-  const getCategoryConfig = () => {
+  const config = useMemo(() => {
     switch (result.category) {
       case "recyclable":
         return {
@@ -48,6 +48,7 @@ const ResultModal = ({ result, location, onClose }: ResultModalProps) => {
           gradient: "from-compostable/30 to-compostable/10",
         };
       case "trash":
+      default:
         return {
           icon: Trash2,
           color: "text-trash",
@@ -59,9 +60,8 @@ const ResultModal = ({ result, location, onClose }: ResultModalProps) => {
           gradient: "from-trash/30 to-trash/10",
         };
     }
-  };
+  }, [result.category]);
 
-  const config = getCategoryConfig();
   const Icon = config.icon;
 
   const getShareText = () => {

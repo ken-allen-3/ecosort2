@@ -210,13 +210,11 @@ const Index = () => {
     setIsAnalyzing(true);
     setResult(null);
     
-    const timeout = setTimeout(() => {
-      if (isAnalyzing) {
-        toast({
-          title: "Still working on it...",
-          description: "This is taking longer than usual. Hang tight.",
-        });
-      }
+    const timeoutId = setTimeout(() => {
+      toast({
+        title: "Still working on it...",
+        description: "This is taking longer than usual. Hang tight.",
+      });
     }, 15000);
     
     try {
@@ -230,7 +228,7 @@ const Index = () => {
         },
       });
 
-      clearTimeout(timeout);
+      clearTimeout(timeoutId);
       console.log("Edge function response:", { data, error });
 
       if (error) {
@@ -268,7 +266,7 @@ const Index = () => {
         description: `That goes in the ${data.category} bin`,
       });
     } catch (error) {
-      clearTimeout(timeout);
+      clearTimeout(timeoutId);
       console.error("Classification error:", error);
       
       const errorMessage = error instanceof Error 
