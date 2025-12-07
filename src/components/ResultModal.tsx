@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { Recycle, Leaf, Trash2, X, MapPin, Share2, Check } from "lucide-react";
+import { useState, useRef } from "react";
+import html2canvas from "html2canvas";
+import { Recycle, Leaf, Trash2, X, MapPin, Share2, Check, Camera, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
@@ -19,6 +20,8 @@ interface ResultModalProps {
 
 const ResultModal = ({ result, location, onClose }: ResultModalProps) => {
   const [copied, setCopied] = useState(false);
+  const [isCapturing, setIsCapturing] = useState(false);
+  const shareCardRef = useRef<HTMLDivElement>(null);
 
   const getCategoryConfig = () => {
     switch (result.category) {
@@ -31,6 +34,7 @@ const ResultModal = ({ result, location, onClose }: ResultModalProps) => {
           title: "Recycling Bin",
           subtitle: "Toss it in the blue one",
           emoji: "♻️",
+          gradient: "from-recyclable/30 to-recyclable/10",
         };
       case "compostable":
         return {
@@ -41,6 +45,7 @@ const ResultModal = ({ result, location, onClose }: ResultModalProps) => {
           title: "Compost Bin",
           subtitle: "Let it rot with dignity",
           emoji: "🌱",
+          gradient: "from-compostable/30 to-compostable/10",
         };
       case "trash":
         return {
@@ -51,6 +56,7 @@ const ResultModal = ({ result, location, onClose }: ResultModalProps) => {
           title: "Trash Bin",
           subtitle: "Into the landfill it goes",
           emoji: "🗑️",
+          gradient: "from-trash/30 to-trash/10",
         };
     }
   };
@@ -67,6 +73,73 @@ const ResultModal = ({ result, location, onClose }: ResultModalProps) => {
       `TIL my ${result.item} goes in the ${binName} bin. Thanks, Which Fucking Bin? ${config.emoji}`,
     ];
     return phrases[Math.floor(Math.random() * phrases.length)];
+  };
+
+  const handleScreenshotShare = async () => {
+    if (!shareCardRef.current || isCapturing) return;
+    
+    setIsCapturing(true);
+    
+    try {
+      const canvas = await html2canvas(shareCardRef.current, {
+        backgroundColor: "#0a0a0a",
+        scale: 2,
+        useCORS: true,
+        logging: false,
+      });
+      
+      const blob = await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob((blob) => {
+          if (blob) resolve(blob);
+          else reject(new Error("Failed to create blob"));
+        }, "image/png", 1.0);
+      });
+      
+      const file = new File([blob], "which-fucking-bin-result.png", { type: "image/png" });
+      const shareText = getShareText();
+      
+      // Try native share with image (mobile)
+      if (navigator.share && navigator.canShare?.({ files: [file] })) {
+        try {
+          await navigator.share({
+            title: "Which Fucking Bin?",
+            text: shareText,
+            files: [file],
+          });
+          toast.success("Shared! Go viral, you eco-warrior 🚀");
+          return;
+        } catch (err) {
+          if ((err as Error).name === "AbortError") {
+            setIsCapturing(false);
+            return;
+          }
+        }
+      }
+      
+      // Fallback: Download the image
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `which-fucking-bin-${result.item.toLowerCase().replace(/\s+/g, "-")}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      // Also copy text to clipboard
+      try {
+        await navigator.clipboard.writeText(`${shareText}\n\n${window.location.origin}`);
+        toast.success("Screenshot saved! Caption copied to clipboard 📋");
+      } catch {
+        toast.success("Screenshot saved! Now go share that shit 📸");
+      }
+      
+    } catch (err) {
+      console.error("Screenshot failed:", err);
+      toast.error("Screenshot failed. Your device is being a little bitch.");
+    } finally {
+      setIsCapturing(false);
+    }
   };
 
   const handleShare = async () => {
@@ -114,44 +187,77 @@ const ResultModal = ({ result, location, onClose }: ResultModalProps) => {
         {/* Content */}
         <div className="flex-1 overflow-y-auto">
           <div className="container mx-auto px-4 py-6 sm:py-8 max-w-2xl space-y-4 sm:space-y-6">
-            {/* Category Badge */}
-            <Card className={`p-8 text-center border-3 ${config.borderColor} ${config.bgColor} animate-bounce-in`}>
-              <div className={`w-24 h-24 mx-auto rounded-lg ${config.bgColor} border-2 ${config.borderColor} flex items-center justify-center mb-4 animate-wiggle`}>
-                <Icon className={`w-12 h-12 ${config.color}`} />
-              </div>
-              <h3 className="font-display text-4xl sm:text-5xl mb-2 tracking-wide">{config.title} {config.emoji}</h3>
-              <p className="text-lg text-muted-foreground mb-1">{config.subtitle}</p>
-              <p className="text-xl text-foreground font-bold mb-2">{result.item}</p>
-              <div className="inline-flex items-center gap-2 text-sm text-muted-foreground bg-background/50 px-3 py-1 rounded-full border border-border">
-                <span className="font-medium">
-                  {result.confidence > 1 ? result.confidence : (result.confidence * 100).toFixed(0)}% sure about this
-                </span>
-              </div>
-            </Card>
-
-            {/* Explanation */}
-            <Card className="p-6 animate-fade-in" style={{ animationDelay: "0.1s" }}>
-              <h4 className="font-display text-xl mb-3 flex items-center gap-2 tracking-wide">
-                <div className={`w-3 h-3 rounded-sm ${config.bgColor} border ${config.borderColor}`}></div>
-                Why? Here's the Deal:
-              </h4>
-              <p className="text-muted-foreground leading-relaxed">{result.explanation}</p>
-            </Card>
-
-            {/* Municipal Notes */}
-            {result.municipalNotes && (
-              <Card className="p-6 bg-primary/10 border-primary/30 animate-fade-in" style={{ animationDelay: "0.2s" }}>
-                <h4 className="font-display text-xl mb-3 flex items-center gap-2 tracking-wide">
-                  <MapPin className="w-5 h-5 text-primary" />
-                  {location}'s Special Rules 🙄
-                </h4>
-                <p className="text-muted-foreground leading-relaxed">{result.municipalNotes}</p>
+            {/* Shareable Card - This gets captured for screenshot */}
+            <div ref={shareCardRef} className="space-y-4">
+              {/* Category Badge */}
+              <Card className={`p-8 text-center border-3 ${config.borderColor} ${config.bgColor} animate-bounce-in`}>
+                <div className={`w-24 h-24 mx-auto rounded-lg ${config.bgColor} border-2 ${config.borderColor} flex items-center justify-center mb-4 animate-wiggle`}>
+                  <Icon className={`w-12 h-12 ${config.color}`} />
+                </div>
+                <h3 className="font-display text-4xl sm:text-5xl mb-2 tracking-wide">{config.title} {config.emoji}</h3>
+                <p className="text-lg text-muted-foreground mb-1">{config.subtitle}</p>
+                <p className="text-xl text-foreground font-bold mb-2">{result.item}</p>
+                <div className="inline-flex items-center gap-2 text-sm text-muted-foreground bg-background/50 px-3 py-1 rounded-full border border-border">
+                  <span className="font-medium">
+                    {result.confidence > 1 ? result.confidence : (result.confidence * 100).toFixed(0)}% sure about this
+                  </span>
+                </div>
               </Card>
-            )}
+
+              {/* Explanation */}
+              <Card className="p-6 animate-fade-in" style={{ animationDelay: "0.1s" }}>
+                <h4 className="font-display text-xl mb-3 flex items-center gap-2 tracking-wide">
+                  <div className={`w-3 h-3 rounded-sm ${config.bgColor} border ${config.borderColor}`}></div>
+                  Why? Here's the Deal:
+                </h4>
+                <p className="text-muted-foreground leading-relaxed">{result.explanation}</p>
+              </Card>
+
+              {/* Municipal Notes */}
+              {result.municipalNotes && (
+                <Card className="p-6 bg-primary/10 border-primary/30 animate-fade-in" style={{ animationDelay: "0.2s" }}>
+                  <h4 className="font-display text-xl mb-3 flex items-center gap-2 tracking-wide">
+                    <MapPin className="w-5 h-5 text-primary" />
+                    {location}'s Special Rules 🙄
+                  </h4>
+                  <p className="text-muted-foreground leading-relaxed">{result.municipalNotes}</p>
+                </Card>
+              )}
+
+              {/* Branding for screenshot */}
+              <div className="text-center py-2">
+                <p className="font-display text-sm text-muted-foreground tracking-widest">whichfuckingbin.com</p>
+              </div>
+            </div>
 
             {/* Ask Question */}
             <div className="animate-fade-in" style={{ animationDelay: "0.3s" }}>
               <AskQuestion result={result} location={location} />
+            </div>
+
+            {/* Screenshot & Share Button */}
+            <div className="animate-fade-in" style={{ animationDelay: "0.35s" }}>
+              <Button 
+                onClick={handleScreenshotShare}
+                disabled={isCapturing}
+                className="w-full min-h-[56px] text-lg font-display tracking-wide bg-gradient-to-r from-primary via-accent to-primary hover:from-primary/90 hover:to-primary/90 border-2 border-primary/50 shadow-lg shadow-primary/20 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-primary/30"
+                size="lg"
+              >
+                {isCapturing ? (
+                  <span className="flex items-center gap-2">
+                    <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+                    Creating Magic...
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-2">
+                    <Camera className="w-5 h-5" />
+                    Screenshot & Share 📸
+                  </span>
+                )}
+              </Button>
+              <p className="text-center text-xs text-muted-foreground mt-2">
+                Turn this verdict into viral content
+              </p>
             </div>
 
             {/* Action Buttons */}
@@ -165,6 +271,7 @@ const ResultModal = ({ result, location, onClose }: ResultModalProps) => {
                   variant="outline" 
                   className="min-h-[48px] min-w-[48px]"
                   size="icon"
+                  title="Share text only"
                 >
                   {copied ? (
                     <Check className="w-5 h-5 text-compostable" />
