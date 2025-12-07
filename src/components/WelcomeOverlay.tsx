@@ -27,7 +27,8 @@ const WelcomeOverlay = ({ onComplete }: WelcomeOverlayProps) => {
       // User already completed onboarding, pass saved location
       onComplete(savedLocation);
     }
-  }, [onComplete]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const tryIPBasedLocation = async () => {
     try {

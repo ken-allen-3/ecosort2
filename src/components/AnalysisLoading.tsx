@@ -3,16 +3,16 @@ import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useState, useEffect } from "react";
 
+const messages = [
+  "Looking at your mystery item... 🔍",
+  "What the hell is this thing... 🤔",
+  "Checking your city's weird rules... 📋",
+  "Almost done, hang on... ⏳",
+];
+
 const AnalysisLoading = () => {
   const [progress, setProgress] = useState(0);
   const [messageIndex, setMessageIndex] = useState(0);
-
-  const messages = [
-    "Looking at your mystery item... 🔍",
-    "What the hell is this thing... 🤔",
-    "Checking your city's weird rules... 📋",
-    "Almost done, hang on... ⏳",
-  ];
 
   useEffect(() => {
     // Progress animation

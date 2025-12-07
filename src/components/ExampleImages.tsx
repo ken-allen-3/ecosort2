@@ -41,6 +41,7 @@ const ExampleImages = ({ onExampleClick }: ExampleImagesProps) => {
       case "compostable":
         return <Leaf className="w-4 h-4" />;
       case "trash":
+      default:
         return <Trash2 className="w-4 h-4" />;
     }
   };
@@ -52,6 +53,7 @@ const ExampleImages = ({ onExampleClick }: ExampleImagesProps) => {
       case "compostable":
         return "bg-compostable/20 text-compostable border-compostable";
       case "trash":
+      default:
         return "bg-trash/20 text-trash border-trash";
     }
   };
