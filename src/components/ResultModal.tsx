@@ -6,6 +6,9 @@ import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import AskQuestion from "./AskQuestion";
 import RuleExplanation from "./RuleExplanation";
+import WhyAIModal from "./WhyAIModal";
+import EnvironmentalImpact from "./EnvironmentalImpact";
+import ImpactBadge from "./ImpactBadge";
 
 interface ResultModalProps {
   result: {
@@ -210,6 +213,16 @@ const ResultModal = ({ result, location, onClose }: ResultModalProps) => {
                 <h3 className="font-display text-4xl sm:text-5xl mb-2 tracking-wide">{config.title} {config.emoji}</h3>
                 <p className="text-lg text-muted-foreground mb-1">{config.subtitle}</p>
                 <p className="text-xl text-foreground font-bold mb-2">{result.item}</p>
+                
+                {/* Impact Badge - only shows for recognized items */}
+                <div className="mb-3">
+                  <ImpactBadge 
+                    item={result.item} 
+                    category={result.category} 
+                    confidence={result.confidence} 
+                  />
+                </div>
+                
                 <div className="inline-flex items-center gap-2 text-sm text-muted-foreground bg-background/50 px-3 py-1 rounded-full border border-border">
                   <span className="font-medium">
                     {result.confidence > 1 ? result.confidence : (result.confidence * 100).toFixed(0)}% sure about this
@@ -251,10 +264,21 @@ const ResultModal = ({ result, location, onClose }: ResultModalProps) => {
               confidenceLevel={confidenceLevel}
             />
 
+            {/* Environmental Impact - Expandable Education */}
+            <div className="animate-fade-in" style={{ animationDelay: "0.25s" }}>
+              <EnvironmentalImpact 
+                category={result.category} 
+                item={result.item} 
+              />
+            </div>
+
             {/* Ask Question */}
             <div className="animate-fade-in" style={{ animationDelay: "0.3s" }}>
               <AskQuestion result={result} location={location} />
             </div>
+
+            {/* Why AI? Micro-Modal - triggers on first scan, then shows as link */}
+            <WhyAIModal triggerOnFirstScan={true} showTrigger={false} />
 
             {/* Screenshot & Share Button */}
             <div className="animate-fade-in" style={{ animationDelay: "0.35s" }}>
@@ -301,9 +325,10 @@ const ResultModal = ({ result, location, onClose }: ResultModalProps) => {
                   )}
                 </Button>
               </div>
-              <p className="text-center text-xs sm:text-sm text-muted-foreground">
-                Share this revelation or keep sorting. You're killing it either way. 💪
-              </p>
+              <div className="flex items-center justify-center gap-3 text-xs sm:text-sm text-muted-foreground">
+                <span>Share this revelation or keep sorting. 💪</span>
+                <WhyAIModal showTrigger={true} triggerOnFirstScan={false} />
+              </div>
             </div>
           </div>
         </div>
