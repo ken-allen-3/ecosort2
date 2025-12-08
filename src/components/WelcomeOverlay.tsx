@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Camera, MapPin, Sparkles, ArrowRight, ChevronLeft, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { analytics } from "@/lib/analytics";
 import LocationInput from "@/components/LocationInput";
 
 interface WelcomeOverlayProps {
@@ -23,6 +24,7 @@ const WelcomeOverlay = ({ onComplete }: WelcomeOverlayProps) => {
     
     if (!hasSeenWelcome) {
       setIsVisible(true);
+      analytics.onboardingStarted();
     } else if (savedLocation) {
       // User already completed onboarding, pass saved location
       onComplete(savedLocation);
@@ -39,6 +41,7 @@ const WelcomeOverlay = ({ onComplete }: WelcomeOverlayProps) => {
       }
 
       setLocation(data.city);
+      analytics.locationSet(data.city, "ip");
       toast({
         title: "Found ya! 📍",
         description: `Looks like you're in ${data.city} (close enough)`,
@@ -105,6 +108,7 @@ const WelcomeOverlay = ({ onComplete }: WelcomeOverlayProps) => {
       }
 
       setLocation(city);
+      analytics.locationSet(city, "gps");
       toast({
         title: "Got it! 📍",
         description: `You're in ${city}`,
@@ -137,6 +141,10 @@ const WelcomeOverlay = ({ onComplete }: WelcomeOverlayProps) => {
     localStorage.setItem("ecosort-welcome-seen", "true");
     localStorage.setItem("ecosort-location", location.trim());
     setIsVisible(false);
+    
+    analytics.onboardingCompleted();
+    analytics.locationSet(location.trim(), "manual");
+    
     onComplete(location.trim());
   };
 

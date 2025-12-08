@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useLocationRules } from "@/hooks/useLocationRules";
+import { analytics } from "@/lib/analytics";
 import ResultModal from "@/components/ResultModal";
 import WelcomeOverlay from "@/components/WelcomeOverlay";
 import ExampleImages from "@/components/ExampleImages";
@@ -173,12 +174,14 @@ const Index = () => {
   const handleQuizComplete = (guess: "recyclable" | "compostable" | "trash") => {
     setUserGuess(guess);
     setShowQuiz(false);
+    analytics.quizStarted();
     analyzeImage();
   };
 
   const handleQuizSkip = () => {
     setShowQuiz(false);
     setUserGuess(null);
+    analytics.quizSkipped();
   };
 
   const handleLocationEdit = () => {
@@ -193,6 +196,7 @@ const Index = () => {
       localStorage.setItem("ecosort-location", trimmed);
       // Prefetch rules for the new location
       fetchRules(trimmed);
+      analytics.locationSet(trimmed, "manual");
       toast({
         title: "Location updated",
         description: `Alright, using ${trimmed}'s weird-ass rules now`,
@@ -227,6 +231,8 @@ const Index = () => {
     
     setIsAnalyzing(true);
     setResult(null);
+    
+    analytics.photoSubmitted(trimmedLocation);
     
     const timeoutId = setTimeout(() => {
       toast({
@@ -279,6 +285,18 @@ const Index = () => {
       console.log("Classification successful:", data);
       setResult(data);
       
+      analytics.classificationReceived(
+        data.category,
+        data.item,
+        data.confidence,
+        data.rule_basis || "general_knowledge"
+      );
+      
+      // Track quiz result if user made a guess
+      if (userGuess) {
+        analytics.quizCompleted(userGuess === data.category, data.category);
+      }
+      
       toast({
         title: "Got it! 🗑️",
         description: `That goes in the ${data.category} bin`,
@@ -290,6 +308,8 @@ const Index = () => {
       const errorMessage = error instanceof Error 
         ? error.message 
         : "Couldn't figure out what that is. Try again?";
+      
+      analytics.classificationError(errorMessage);
       
       toast({
         title: "Damn it",
