@@ -89,8 +89,16 @@ Return a JSON object with:
   "explanation": "snarky but helpful explanation of why this goes where it does, mentioning ${cityName}'s specific rules if relevant. Be funny but accurate. Keep it to 2-3 sentences max.",
   "rule_basis": "city_specific" | "state_guidelines" | "national_guidelines" | "general_knowledge",
   "reasoning": ["step 1 of your logic", "step 2", "step 3"],
-  "bin_name": "the local name for this bin type (e.g., 'blue bin', 'green cart', 'recycling container')"
+  "bin_name": "the local name for this bin type (e.g., 'blue bin', 'green cart', 'recycling container')",
+  "sources": [
+    {
+      "name": "Short source name (e.g., '${cityName} Recycling Guide')",
+      "url": "https://official-url.gov/recycling"
+    }
+  ]
 }
+
+CRITICAL: Include 1-2 sources in the sources array. Prefer official city/county government recycling pages, waste hauler websites (Republic Services, Waste Management, etc.), or EPA resources. These help users verify your guidance.
 
 For rule_basis:
 - Use "city_specific" if you have actual knowledge of ${cityName}'s waste program
