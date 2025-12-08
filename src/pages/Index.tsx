@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useLocationRules } from "@/hooks/useLocationRules";
 import ResultModal from "@/components/ResultModal";
 import WelcomeOverlay from "@/components/WelcomeOverlay";
 import ExampleImages from "@/components/ExampleImages";
@@ -12,6 +13,7 @@ import QuizMode from "@/components/QuizMode";
 import QuizResult from "@/components/QuizResult";
 import QuizSettings from "@/components/QuizSettings";
 import LocationInput from "@/components/LocationInput";
+import LocationRulesPreview from "@/components/LocationRulesPreview";
 import { checkBrowserCompatibility, getBrowserInfo } from "@/lib/browserCompat";
 
 interface ClassificationResult {
@@ -21,6 +23,9 @@ interface ClassificationResult {
   explanation: string;
   municipalNotes?: string;
   disclaimer?: string;
+  rule_basis?: "city_specific" | "state_guidelines" | "national_guidelines" | "general_knowledge";
+  reasoning?: string[];
+  bin_name?: string;
 }
 
 const Index = () => {
@@ -40,9 +45,12 @@ const Index = () => {
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const { rules: locationRules, isLoading: isLoadingRules, error: rulesError, fetchRules } = useLocationRules();
 
   const handleOnboardingComplete = (newLocation: string) => {
     setLocation(newLocation);
+    // Prefetch location rules when onboarding completes
+    fetchRules(newLocation);
   };
 
   // Check browser compatibility on mount
@@ -66,6 +74,14 @@ const Index = () => {
   useEffect(() => {
     localStorage.setItem("ecosort-quiz-enabled", JSON.stringify(quizEnabled));
   }, [quizEnabled]);
+
+  // Fetch location rules on mount if location exists
+  useEffect(() => {
+    if (location && !locationRules) {
+      fetchRules(location);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleImageCapture = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -175,6 +191,8 @@ const Index = () => {
     if (trimmed) {
       setLocation(trimmed);
       localStorage.setItem("ecosort-location", trimmed);
+      // Prefetch rules for the new location
+      fetchRules(trimmed);
       toast({
         title: "Location updated",
         description: `Alright, using ${trimmed}'s weird-ass rules now`,
@@ -341,7 +359,16 @@ const Index = () => {
           </div>
         )}
 
-        
+        {/* Location Rules Preview */}
+        {!image && !result && location && (
+          <LocationRulesPreview 
+            rules={locationRules} 
+            isLoading={isLoadingRules} 
+            error={rulesError} 
+          />
+        )}
+
+       
 
         {showQuiz && image && location ? (
           <Card className="p-4 sm:p-6 animate-drop">

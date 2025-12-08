@@ -1,1 +1,4 @@
 project_id = "mfprozqpeusmeecbtbop"
+
+[functions.fetch-location-rules]
+verify_jwt = false
