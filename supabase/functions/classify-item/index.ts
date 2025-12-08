@@ -86,8 +86,22 @@ Return a JSON object with:
   "category": "recyclable" | "compostable" | "trash",
   "item": "brief description of the item",
   "confidence": 0.0 to 1.0,
-  "explanation": "snarky but helpful explanation of why this goes where it does, mentioning ${cityName}'s specific rules if relevant. Be funny but accurate. Keep it to 2-3 sentences max."
-}`,
+  "explanation": "snarky but helpful explanation of why this goes where it does, mentioning ${cityName}'s specific rules if relevant. Be funny but accurate. Keep it to 2-3 sentences max.",
+  "rule_basis": "city_specific" | "state_guidelines" | "national_guidelines" | "general_knowledge",
+  "reasoning": ["step 1 of your logic", "step 2", "step 3"],
+  "bin_name": "the local name for this bin type (e.g., 'blue bin', 'green cart', 'recycling container')"
+}
+
+For rule_basis:
+- Use "city_specific" if you have actual knowledge of ${cityName}'s waste program
+- Use "state_guidelines" if using state-level recycling rules
+- Use "national_guidelines" if falling back to general US recycling standards
+- Use "general_knowledge" if this is just common recycling knowledge
+
+For reasoning, provide 2-4 short steps explaining your logic, like:
+- "This is a plastic bottle with recycling symbol #1 (PET)"
+- "PET plastics are widely accepted in curbside recycling"
+- "${cityName} accepts plastics #1-7 in their blue bin program"`,
           },
           {
             role: "user",
