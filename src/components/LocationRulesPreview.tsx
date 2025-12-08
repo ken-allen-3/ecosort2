@@ -1,6 +1,7 @@
-import { Loader2, CheckCircle2, XCircle, Info, Leaf, Recycle, AlertTriangle } from "lucide-react";
-import { Card } from "@/components/ui/card";
+import { useState } from "react";
+import { Loader2, Leaf, Recycle, AlertTriangle, ChevronDown, CheckCircle2 } from "lucide-react";
 import { LocationRules } from "@/hooks/useLocationRules";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface LocationRulesPreviewProps {
   rules: LocationRules | null;
@@ -9,87 +10,76 @@ interface LocationRulesPreviewProps {
 }
 
 const LocationRulesPreview = ({ rules, isLoading, error }: LocationRulesPreviewProps) => {
+  const [isOpen, setIsOpen] = useState(false);
+
   if (isLoading) {
     return (
-      <div className="flex items-center gap-2 text-sm text-muted-foreground animate-pulse">
-        <Loader2 className="w-4 h-4 animate-spin" />
-        <span>Loading local recycling rules...</span>
+      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+        <Loader2 className="w-3 h-3 animate-spin" />
+        <span>Loading local rules...</span>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <AlertTriangle className="w-4 h-4 text-accent" />
-        <span>Couldn't load local rules. We'll figure it out when you scan.</span>
+      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+        <AlertTriangle className="w-3 h-3 text-accent" />
+        <span>Rules unavailable</span>
       </div>
     );
   }
 
   if (!rules) return null;
 
-  const getBasisLabel = () => {
+  const getBasisBadge = () => {
     switch (rules.rule_basis) {
       case "city_specific":
-        return { text: `${rules.city}'s rules loaded`, icon: "🏙️", color: "text-compostable" };
+        return { text: `${rules.city} rules`, color: "text-compostable" };
       case "state_guidelines":
-        return { text: "Using state guidelines", icon: "🗺️", color: "text-primary" };
-      case "national_guidelines":
-        return { text: "Using US standards", icon: "🇺🇸", color: "text-accent" };
+        return { text: "State rules", color: "text-primary" };
       default:
-        return { text: "General guidelines", icon: "📚", color: "text-muted-foreground" };
+        return { text: "US standards", color: "text-muted-foreground" };
     }
   };
 
-  const basis = getBasisLabel();
+  const basis = getBasisBadge();
 
   return (
-    <Card className="p-4 bg-muted/30 border-border/50 animate-fade-in">
-      <div className="space-y-3">
-        {/* Header with rule basis */}
-        <div className="flex items-center justify-between">
-          <div className={`flex items-center gap-2 text-sm font-medium ${basis.color}`}>
-            <span>{basis.icon}</span>
-            <span>{basis.text}</span>
+    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+      <CollapsibleTrigger className="flex items-center gap-1.5 text-xs hover:opacity-80 transition-opacity">
+        <CheckCircle2 className={`w-3 h-3 ${basis.color}`} />
+        <span className={basis.color}>{basis.text}</span>
+        <ChevronDown className={`w-3 h-3 text-muted-foreground transition-transform ${isOpen ? "rotate-180" : ""}`} />
+      </CollapsibleTrigger>
+      
+      <CollapsibleContent>
+        <div className="mt-2 p-3 bg-muted/30 rounded-lg border border-border/50 text-xs space-y-2 animate-fade-in">
+          <p className="text-muted-foreground">{rules.summary}</p>
+          
+          <div className="flex flex-wrap gap-1.5">
+            {rules.has_composting && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-compostable/20 text-compostable rounded-full">
+                <Leaf className="w-2.5 h-2.5" />
+                Compost
+              </span>
+            )}
+            {rules.bin_names?.recycling && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-recyclable/20 text-recyclable rounded-full">
+                <Recycle className="w-2.5 h-2.5" />
+                {rules.bin_names.recycling}
+              </span>
+            )}
           </div>
-          {rules.has_curbside_recycling && (
-            <div className="flex items-center gap-1 text-xs text-recyclable">
-              <Recycle className="w-3 h-3" />
-              <span>{rules.recycling_type}</span>
-            </div>
+
+          {rules.not_accepted && rules.not_accepted.length > 0 && (
+            <p className="text-muted-foreground">
+              <span className="text-accent">⚠️</span> {rules.not_accepted.slice(0, 3).join(", ")}
+            </p>
           )}
         </div>
-
-        {/* Summary */}
-        <p className="text-sm text-muted-foreground">{rules.summary}</p>
-
-        {/* Quick stats */}
-        <div className="flex flex-wrap gap-2 text-xs">
-          {rules.has_composting && (
-            <span className="inline-flex items-center gap-1 px-2 py-1 bg-compostable/20 text-compostable rounded-full">
-              <Leaf className="w-3 h-3" />
-              Composting available
-            </span>
-          )}
-          {rules.bin_names?.recycling && (
-            <span className="inline-flex items-center gap-1 px-2 py-1 bg-recyclable/20 text-recyclable rounded-full">
-              <Recycle className="w-3 h-3" />
-              {rules.bin_names.recycling}
-            </span>
-          )}
-        </div>
-
-        {/* Common mistakes teaser */}
-        {rules.not_accepted && rules.not_accepted.length > 0 && (
-          <div className="text-xs text-muted-foreground">
-            <span className="font-medium text-accent">⚠️ Common mistakes: </span>
-            {rules.not_accepted.slice(0, 3).join(", ")}
-            {rules.not_accepted.length > 3 && "..."}
-          </div>
-        )}
-      </div>
-    </Card>
+      </CollapsibleContent>
+    </Collapsible>
   );
 };
 
