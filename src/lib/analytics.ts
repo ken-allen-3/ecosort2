@@ -1,7 +1,7 @@
 // Analytics configuration
 export const ANALYTICS_CONFIG = {
-  googleAnalyticsId: "G-XXXXXXXXXX", // Replace with your GA4 Measurement ID
-  hotjarSiteId: "0000000", // Replace with your Hotjar Site ID
+  googleAnalyticsId: "G-W28CY7EYFY",
+  hotjarSiteId: "6595907",
 };
 
 // Google Analytics helper
