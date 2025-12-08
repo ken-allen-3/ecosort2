@@ -256,80 +256,86 @@ const ResultModal = ({ result, location, onClose }: ResultModalProps) => {
               </div>
             </div>
 
-            {/* How We Determined This - Outside shareable card */}
-            <RuleExplanation
-              reasoning={result.reasoning || []}
-              ruleBasis={result.rule_basis || "general_knowledge"}
-              location={location}
-              confidenceLevel={confidenceLevel}
-            />
-
-            {/* Environmental Impact - Expandable Education */}
-            <div className="animate-fade-in" style={{ animationDelay: "0.25s" }}>
-              <EnvironmentalImpact 
-                category={result.category} 
-                item={result.item} 
-              />
+            {/* Primary Action - Most prominent */}
+            <div className="animate-fade-in" style={{ animationDelay: "0.2s" }}>
+              <Button onClick={onClose} className="w-full min-h-[52px] text-lg font-display" size="lg">
+                Got More Trash 🗑️
+              </Button>
             </div>
 
-            {/* Ask Question */}
-            <div className="animate-fade-in" style={{ animationDelay: "0.3s" }}>
-              <AskQuestion result={result} location={location} />
-            </div>
-
-            {/* Why AI? Micro-Modal - triggers on first scan, then shows as link */}
-            <WhyAIModal triggerOnFirstScan={true} showTrigger={false} />
-
-            {/* Screenshot & Share Button */}
-            <div className="animate-fade-in" style={{ animationDelay: "0.35s" }}>
+            {/* Secondary Actions - Less prominent */}
+            <div className="flex gap-2 animate-fade-in" style={{ animationDelay: "0.25s" }}>
               <Button 
                 onClick={handleScreenshotShare}
                 disabled={isCapturing}
-                className="w-full min-h-[56px] text-lg font-display tracking-wide bg-gradient-to-r from-primary via-accent to-primary hover:from-primary/90 hover:to-primary/90 border-2 border-primary/50 shadow-lg shadow-primary/20 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-primary/30"
-                size="lg"
+                variant="outline"
+                className="flex-1 min-h-[44px]"
               >
                 {isCapturing ? (
                   <span className="flex items-center gap-2">
-                    <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-                    Creating Magic...
+                    <div className="w-4 h-4 border-2 border-muted-foreground/30 border-t-foreground rounded-full animate-spin" />
+                    Capturing...
                   </span>
                 ) : (
                   <span className="flex items-center gap-2">
-                    <Camera className="w-5 h-5" />
-                    Screenshot & Share 📸
+                    <Camera className="w-4 h-4" />
+                    Share Screenshot
                   </span>
                 )}
               </Button>
-              <p className="text-center text-xs text-muted-foreground mt-2">
-                Turn this verdict into viral content
-              </p>
+              <Button 
+                onClick={handleShare} 
+                variant="outline" 
+                className="min-h-[44px] min-w-[44px]"
+                size="icon"
+                title="Share text"
+              >
+                {copied ? (
+                  <Check className="w-4 h-4 text-compostable" />
+                ) : (
+                  <Share2 className="w-4 h-4" />
+                )}
+              </Button>
             </div>
 
-            {/* Action Buttons */}
-            <div className="space-y-3 pt-2 sm:pt-4 animate-fade-in" style={{ animationDelay: "0.4s" }}>
-              <div className="flex gap-3">
-                <Button onClick={onClose} className="flex-1 min-h-[48px] text-base" size="lg">
-                  Got More Trash 🗑️
-                </Button>
-                <Button 
-                  onClick={handleShare} 
-                  variant="outline" 
-                  className="min-h-[48px] min-w-[48px]"
-                  size="icon"
-                  title="Share text only"
-                >
-                  {copied ? (
-                    <Check className="w-5 h-5 text-compostable" />
-                  ) : (
-                    <Share2 className="w-5 h-5" />
-                  )}
-                </Button>
-              </div>
-              <div className="flex items-center justify-center gap-3 text-xs sm:text-sm text-muted-foreground">
-                <span>Share this revelation or keep sorting. 💪</span>
-                <WhyAIModal showTrigger={true} triggerOnFirstScan={false} />
-              </div>
+            {/* Collapsible "Learn More" Section - Consolidates all educational content */}
+            <div className="border-t border-border/50 pt-4 mt-2 animate-fade-in" style={{ animationDelay: "0.3s" }}>
+              <details className="group">
+                <summary className="flex items-center justify-between cursor-pointer text-sm text-muted-foreground hover:text-foreground transition-colors py-2">
+                  <span className="flex items-center gap-2">
+                    <span>Learn more about this verdict</span>
+                  </span>
+                  <span className="text-xs group-open:rotate-180 transition-transform">▼</span>
+                </summary>
+                
+                <div className="space-y-3 pt-3">
+                  {/* How we figured this out */}
+                  <RuleExplanation
+                    reasoning={result.reasoning || []}
+                    ruleBasis={result.rule_basis || "general_knowledge"}
+                    location={location}
+                    confidenceLevel={confidenceLevel}
+                  />
+
+                  {/* Environmental Impact */}
+                  <EnvironmentalImpact 
+                    category={result.category} 
+                    item={result.item} 
+                  />
+
+                  {/* Ask Question */}
+                  <AskQuestion result={result} location={location} />
+                </div>
+              </details>
             </div>
+
+            {/* Minimal footer with Why AI link */}
+            <div className="flex items-center justify-center pt-2 text-xs text-muted-foreground/70">
+              <WhyAIModal showTrigger={true} triggerOnFirstScan={false} />
+            </div>
+            
+            {/* Why AI? Micro-Modal - triggers on first scan */}
+            <WhyAIModal triggerOnFirstScan={true} showTrigger={false} />
           </div>
         </div>
       </div>
