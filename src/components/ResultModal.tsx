@@ -4,6 +4,7 @@ import { Recycle, Leaf, Trash2, X, MapPin, Share2, Check, Camera, ExternalLink }
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
+import { analytics } from "@/lib/analytics";
 import AskQuestion from "./AskQuestion";
 import RuleExplanation from "./RuleExplanation";
 import WhyAIModal from "./WhyAIModal";
@@ -101,6 +102,7 @@ const ResultModal = ({ result, location, onClose }: ResultModalProps) => {
     if (!shareCardRef.current || isCapturing) return;
     
     setIsCapturing(true);
+    analytics.shareClicked("screenshot");
     
     try {
       const canvas = await html2canvas(shareCardRef.current, {
@@ -166,6 +168,7 @@ const ResultModal = ({ result, location, onClose }: ResultModalProps) => {
 
   const handleShare = async () => {
     const shareText = getShareText();
+    analytics.shareClicked("text");
     
     // Try native share API first (mobile)
     if (navigator.share) {
@@ -346,7 +349,11 @@ const ResultModal = ({ result, location, onClose }: ResultModalProps) => {
 
             {/* Collapsible "Learn More" Section - Consolidates all educational content */}
             <div className="border-t border-border/50 pt-4 mt-2 animate-fade-in" style={{ animationDelay: "0.3s" }}>
-              <details className="group">
+              <details className="group" onToggle={(e) => {
+                if ((e.target as HTMLDetailsElement).open) {
+                  analytics.learnMoreExpanded();
+                }
+              }}>
                 <summary className="flex items-center justify-between cursor-pointer text-sm text-muted-foreground hover:text-foreground transition-colors py-2">
                   <span className="flex items-center gap-2">
                     <span>Learn more about this verdict</span>

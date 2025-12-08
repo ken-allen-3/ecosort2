@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { analytics } from "@/lib/analytics";
 
 interface AskQuestionProps {
   result: {
@@ -34,6 +35,8 @@ const AskQuestion = ({ result, location }: AskQuestionProps) => {
     setQuestion("");
     setMessages((prev) => [...prev, { role: "user", content: userQuestion }]);
     setIsLoading(true);
+    
+    analytics.questionAsked(result.category);
 
     try {
       const { data, error } = await supabase.functions.invoke("ask-about-result", {
