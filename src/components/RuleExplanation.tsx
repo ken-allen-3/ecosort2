@@ -1,8 +1,4 @@
-import { useState } from "react";
-import { ChevronDown, ChevronUp, Info, ExternalLink, AlertTriangle } from "lucide-react";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-
+import { ExternalLink, AlertTriangle } from "lucide-react";
 interface RuleExplanationProps {
   reasoning: string[];
   ruleBasis: "city_specific" | "state_guidelines" | "national_guidelines" | "general_knowledge";
@@ -11,7 +7,6 @@ interface RuleExplanationProps {
 }
 
 const RuleExplanation = ({ reasoning, ruleBasis, location, confidenceLevel }: RuleExplanationProps) => {
-  const [isExpanded, setIsExpanded] = useState(false);
 
   const getBasisConfig = () => {
     switch (ruleBasis) {
@@ -67,72 +62,52 @@ const RuleExplanation = ({ reasoning, ruleBasis, location, confidenceLevel }: Ru
   };
 
   return (
-    <Card className="border-border/50 overflow-hidden animate-fade-in" style={{ animationDelay: "0.15s" }}>
-      <Button
-        variant="ghost"
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full p-4 justify-between text-left h-auto hover:bg-muted/50"
-      >
-        <span className="flex items-center gap-2 text-sm font-medium">
-          <Info className="w-4 h-4 text-muted-foreground" />
-          How did we figure this out? 🤔
-        </span>
-        {isExpanded ? (
-          <ChevronUp className="w-4 h-4 text-muted-foreground" />
-        ) : (
-          <ChevronDown className="w-4 h-4 text-muted-foreground" />
-        )}
-      </Button>
+    <div className="space-y-3">
+      {/* Rule Basis Badge */}
+      <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border ${basisConfig.badgeClass}`}>
+        <span>{basisConfig.icon}</span>
+        <span>{basisConfig.label}</span>
+      </div>
 
-      {isExpanded && (
-        <div className="px-4 pb-4 space-y-4 animate-fade-in">
-          {/* Rule Basis Badge */}
-          <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border ${basisConfig.badgeClass}`}>
-            <span>{basisConfig.icon}</span>
-            <span>{basisConfig.label}</span>
-          </div>
+      {/* Basis Description */}
+      <p className="text-sm text-muted-foreground">{basisConfig.description}</p>
 
-          {/* Basis Description */}
-          <p className="text-sm text-muted-foreground">{basisConfig.description}</p>
-
-          {/* Step-by-step Reasoning */}
-          {reasoning && reasoning.length > 0 && (
-            <div className="space-y-2">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Our logic:</p>
-              <ol className="space-y-2">
-                {reasoning.map((step, index) => (
-                  <li key={index} className="flex gap-3 text-sm">
-                    <span className="flex-shrink-0 w-5 h-5 rounded-full bg-muted flex items-center justify-center text-xs font-medium text-muted-foreground">
-                      {index + 1}
-                    </span>
-                    <span className="text-muted-foreground">{step}</span>
-                  </li>
-                ))}
-              </ol>
-            </div>
-          )}
-
-          {/* Low Confidence Warning */}
-          {confidenceMessage && (
-            <div className="flex items-start gap-2 p-3 bg-accent/10 border border-accent/20 rounded-lg">
-              <AlertTriangle className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-accent">{confidenceMessage}</p>
-            </div>
-          )}
-
-          {/* Link to search for local rules */}
-          <a
-            href={getSearchUrl()}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline"
-          >
-            <ExternalLink className="w-3 h-3" />
-            Search for {location}'s official recycling guide
-          </a>
+      {/* Step-by-step Reasoning */}
+      {reasoning && reasoning.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Our logic:</p>
+          <ol className="space-y-2">
+            {reasoning.map((step, index) => (
+              <li key={index} className="flex gap-3 text-sm">
+                <span className="flex-shrink-0 w-5 h-5 rounded-full bg-muted flex items-center justify-center text-xs font-medium text-muted-foreground">
+                  {index + 1}
+                </span>
+                <span className="text-muted-foreground">{step}</span>
+              </li>
+            ))}
+          </ol>
         </div>
       )}
-    </Card>
+
+      {/* Low Confidence Warning */}
+      {confidenceMessage && (
+        <div className="flex items-start gap-2 p-3 bg-accent/10 border border-accent/20 rounded-lg">
+          <AlertTriangle className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-accent">{confidenceMessage}</p>
+        </div>
+      )}
+
+      {/* Link to search for local rules */}
+      <a
+        href={getSearchUrl()}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline"
+      >
+        <ExternalLink className="w-3 h-3" />
+        Search for {location}'s official recycling guide
+      </a>
+    </div>
   );
 };
 

@@ -1,7 +1,4 @@
-import { useState } from "react";
-import { ChevronDown, Leaf } from "lucide-react";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Card } from "@/components/ui/card";
+import { Leaf } from "lucide-react";
 
 interface EnvironmentalImpactProps {
   category: "recyclable" | "compostable" | "trash";
@@ -23,41 +20,19 @@ const impactMessages: Record<string, { collapsed: string; expanded: string }> = 
   },
 };
 
-const EnvironmentalImpact = ({ category, item }: EnvironmentalImpactProps) => {
-  const [isOpen, setIsOpen] = useState(false);
+const EnvironmentalImpact = ({ category }: EnvironmentalImpactProps) => {
   const messages = impactMessages[category];
 
   return (
-    <Card className="border border-border bg-card/50 overflow-hidden">
-      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-        <CollapsibleTrigger className="w-full p-4 flex items-start gap-3 text-left hover:bg-muted/30 transition-colors">
-          <div className="w-8 h-8 rounded-lg bg-compostable/20 border border-compostable/30 flex items-center justify-center flex-shrink-0 mt-0.5">
-            <Leaf className="w-4 h-4 text-compostable" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-foreground flex items-center gap-2">
-              Why This Matters
-              <ChevronDown 
-                className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} 
-              />
-            </p>
-            <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-              {messages.collapsed}
-            </p>
-          </div>
-        </CollapsibleTrigger>
-        
-        <CollapsibleContent>
-          <div className="px-4 pb-4 pt-0">
-            <div className="pl-11">
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                {messages.expanded}
-              </p>
-            </div>
-          </div>
-        </CollapsibleContent>
-      </Collapsible>
-    </Card>
+    <div className="space-y-2 pt-3 border-t border-border/30">
+      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-2">
+        <Leaf className="w-3 h-3 text-compostable" />
+        Why This Matters
+      </p>
+      <p className="text-sm text-muted-foreground leading-relaxed">
+        {messages.expanded}
+      </p>
+    </div>
   );
 };
 

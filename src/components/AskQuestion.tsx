@@ -71,14 +71,15 @@ const AskQuestion = ({ result, location }: AskQuestionProps) => {
 
   if (!isOpen) {
     return (
-      <Button
-        variant="outline"
-        onClick={() => setIsOpen(true)}
-        className="w-full min-h-[48px] gap-2"
-      >
-        <MessageCircle className="w-4 h-4" />
-        Wait, I have questions about this
-      </Button>
+      <div className="pt-3 border-t border-border/30">
+        <button
+          onClick={() => setIsOpen(true)}
+          className="text-sm text-primary hover:underline flex items-center gap-2"
+        >
+          <MessageCircle className="w-4 h-4" />
+          Have a question about this?
+        </button>
+      </div>
     );
   }
 

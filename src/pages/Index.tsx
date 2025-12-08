@@ -477,7 +477,7 @@ const Index = () => {
                     ) : quizEnabled ? (
                       "Test Me First 🧠"
                     ) : (
-                      "Where Does It Go? 🗑️"
+                      "Submit Photo"
                     )}
                   </Button>
                 </div>
