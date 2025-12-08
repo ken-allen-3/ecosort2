@@ -259,7 +259,7 @@ const ResultModal = ({ result, location, onClose }: ResultModalProps) => {
             {/* Primary Action - Most prominent */}
             <div className="animate-fade-in" style={{ animationDelay: "0.2s" }}>
               <Button onClick={onClose} className="w-full min-h-[52px] text-lg font-display" size="lg">
-                Got More Trash 🗑️
+                Scan Another Item
               </Button>
             </div>
 
