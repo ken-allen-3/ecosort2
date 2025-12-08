@@ -1,6 +1,6 @@
 import { useState, useRef, useMemo } from "react";
 import html2canvas from "html2canvas";
-import { Recycle, Leaf, Trash2, X, MapPin, Share2, Check, Camera } from "lucide-react";
+import { Recycle, Leaf, Trash2, X, MapPin, Share2, Check, Camera, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
@@ -9,6 +9,11 @@ import RuleExplanation from "./RuleExplanation";
 import WhyAIModal from "./WhyAIModal";
 import EnvironmentalImpact from "./EnvironmentalImpact";
 import ImpactBadge from "./ImpactBadge";
+
+interface ResultSource {
+  name: string;
+  url: string;
+}
 
 interface ResultModalProps {
   result: {
@@ -20,6 +25,7 @@ interface ResultModalProps {
     rule_basis?: "city_specific" | "state_guidelines" | "national_guidelines" | "general_knowledge";
     reasoning?: string[];
     bin_name?: string;
+    sources?: ResultSource[];
   };
   location: string;
   onClose: () => void;
@@ -230,13 +236,53 @@ const ResultModal = ({ result, location, onClose }: ResultModalProps) => {
                 </div>
               </Card>
 
-              {/* Explanation */}
+              {/* Explanation with inline citations */}
               <Card className="p-6 animate-fade-in" style={{ animationDelay: "0.1s" }}>
                 <h4 className="font-display text-xl mb-3 flex items-center gap-2 tracking-wide">
                   <div className={`w-3 h-3 rounded-sm ${config.bgColor} border ${config.borderColor}`}></div>
                   Why? Here's the Deal:
                 </h4>
-                <p className="text-muted-foreground leading-relaxed">{result.explanation}</p>
+                <p className="text-muted-foreground leading-relaxed">
+                  {result.explanation}
+                  {result.sources && result.sources.length > 0 && (
+                    <span className="ml-1">
+                      {result.sources.map((source, index) => (
+                        <a
+                          key={index}
+                          href={source.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center text-primary hover:text-primary/80 hover:underline transition-colors ml-1"
+                          title={source.name}
+                        >
+                          <sup className="text-[10px] font-medium">[{index + 1}]</sup>
+                        </a>
+                      ))}
+                    </span>
+                  )}
+                </p>
+                
+                {/* Source list */}
+                {result.sources && result.sources.length > 0 && (
+                  <div className="mt-3 pt-3 border-t border-border/30 text-xs text-muted-foreground/70">
+                    <span className="font-medium">Sources: </span>
+                    {result.sources.map((source, index) => (
+                      <span key={index}>
+                        <a
+                          href={source.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary hover:text-primary/80 hover:underline inline-flex items-center gap-0.5"
+                        >
+                          <sup className="mr-0.5">[{index + 1}]</sup>
+                          {source.name}
+                          <ExternalLink className="w-2.5 h-2.5 ml-0.5" />
+                        </a>
+                        {index < result.sources!.length - 1 && ", "}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </Card>
 
               {/* Municipal Notes */}
