@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Loader2, Leaf, Recycle, AlertTriangle, ChevronDown, CheckCircle2 } from "lucide-react";
+import { Loader2, Leaf, Recycle, AlertTriangle, ChevronDown, CheckCircle2, ExternalLink } from "lucide-react";
 import { LocationRules } from "@/hooks/useLocationRules";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
@@ -76,6 +76,26 @@ const LocationRulesPreview = ({ rules, isLoading, error }: LocationRulesPreviewP
             <p className="text-muted-foreground">
               <span className="text-accent">⚠️</span> {rules.not_accepted.slice(0, 3).join(", ")}
             </p>
+          )}
+
+          {rules.sources && rules.sources.length > 0 && (
+            <div className="pt-2 border-t border-border/30">
+              <p className="text-muted-foreground/70 mb-1">Sources:</p>
+              <div className="flex flex-wrap gap-2">
+                {rules.sources.map((source, index) => (
+                  <a
+                    key={index}
+                    href={source.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-primary hover:text-primary/80 hover:underline transition-colors"
+                  >
+                    <span>{source.name}</span>
+                    <ExternalLink className="w-2.5 h-2.5" />
+                  </a>
+                ))}
+              </div>
+            </div>
           )}
         </div>
       </CollapsibleContent>

@@ -55,6 +55,7 @@ serve(async (req) => {
 3. Common items that are NOT accepted (that people often mistakenly recycle)
 4. Whether composting/organics collection is available
 5. Any unique local rules or restrictions
+6. IMPORTANT: Include source citations with URLs to official government or waste management websites
 
 Return a JSON object with:
 {
@@ -72,8 +73,17 @@ Return a JSON object with:
   "not_accepted": ["common", "mistakes", "people", "make"],
   "special_rules": ["any", "unique", "local", "rules"],
   "composting_notes": "brief note about composting program if available",
-  "summary": "2-3 sentence summary of the recycling situation in this city"
+  "summary": "2-3 sentence summary of the recycling situation in this city",
+  "sources": [
+    {
+      "name": "Official source name (e.g., City of ${cityName} Public Works)",
+      "url": "https://official-url-to-recycling-info.gov",
+      "type": "city" | "county" | "state" | "waste_hauler" | "epa"
+    }
+  ]
 }
+
+CRITICAL: Always include at least one source in the sources array. Prefer official city/county government websites, waste hauler websites, or EPA resources. If you cannot find a specific URL, use the city's main government website or the waste hauler's general recycling page.
 
 Be accurate. If you don't have specific knowledge about ${cityName}, use state-level or national guidelines and indicate that in rule_basis.`,
           },

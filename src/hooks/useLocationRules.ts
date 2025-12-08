@@ -1,6 +1,12 @@
 import { useState, useCallback, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
+export interface LocationRuleSource {
+  name: string;
+  url: string;
+  type: "city" | "county" | "state" | "waste_hauler" | "epa";
+}
+
 export interface LocationRules {
   city: string;
   location: string;
@@ -19,6 +25,7 @@ export interface LocationRules {
   composting_notes: string;
   summary: string;
   fetched_at: string;
+  sources?: LocationRuleSource[];
 }
 
 interface UseLocationRulesReturn {
