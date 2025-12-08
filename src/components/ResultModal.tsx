@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import AskQuestion from "./AskQuestion";
+import RuleExplanation from "./RuleExplanation";
 
 interface ResultModalProps {
   result: {
@@ -13,6 +14,9 @@ interface ResultModalProps {
     confidence: number;
     explanation: string;
     municipalNotes?: string;
+    rule_basis?: "city_specific" | "state_guidelines" | "national_guidelines" | "general_knowledge";
+    reasoning?: string[];
+    bin_name?: string;
   };
   location: string;
   onClose: () => void;
@@ -24,6 +28,8 @@ const ResultModal = ({ result, location, onClose }: ResultModalProps) => {
   const shareCardRef = useRef<HTMLDivElement>(null);
 
   const config = useMemo(() => {
+    const binName = result.bin_name;
+    
     switch (result.category) {
       case "recyclable":
         return {
@@ -31,8 +37,8 @@ const ResultModal = ({ result, location, onClose }: ResultModalProps) => {
           color: "text-recyclable",
           bgColor: "bg-recyclable/20",
           borderColor: "border-recyclable",
-          title: "Recycling Bin",
-          subtitle: "Toss it in the blue one",
+          title: binName || "Recycling Bin",
+          subtitle: binName ? `Toss it in the ${binName}` : "Toss it in the recycling",
           emoji: "♻️",
           gradient: "from-recyclable/30 to-recyclable/10",
         };
@@ -42,8 +48,8 @@ const ResultModal = ({ result, location, onClose }: ResultModalProps) => {
           color: "text-compostable",
           bgColor: "bg-compostable/20",
           borderColor: "border-compostable",
-          title: "Compost Bin",
-          subtitle: "Let it rot with dignity",
+          title: binName || "Compost Bin",
+          subtitle: binName ? `Into the ${binName} it goes` : "Let it rot with dignity",
           emoji: "🌱",
           gradient: "from-compostable/30 to-compostable/10",
         };
@@ -54,13 +60,20 @@ const ResultModal = ({ result, location, onClose }: ResultModalProps) => {
           color: "text-trash",
           bgColor: "bg-trash/20",
           borderColor: "border-trash",
-          title: "Trash Bin",
-          subtitle: "Into the landfill it goes",
+          title: binName || "Trash Bin",
+          subtitle: binName ? `Into the ${binName} it goes` : "Into the landfill it goes",
           emoji: "🗑️",
           gradient: "from-trash/30 to-trash/10",
         };
     }
-  }, [result.category]);
+  }, [result.category, result.bin_name]);
+
+  const confidenceLevel = useMemo((): "high" | "medium" | "low" => {
+    const conf = result.confidence > 1 ? result.confidence / 100 : result.confidence;
+    if (conf >= 0.85) return "high";
+    if (conf >= 0.6) return "medium";
+    return "low";
+  }, [result.confidence]);
 
   const Icon = config.icon;
 
@@ -229,6 +242,14 @@ const ResultModal = ({ result, location, onClose }: ResultModalProps) => {
                 <p className="font-display text-sm text-muted-foreground tracking-widest">whichfuckingbin.com</p>
               </div>
             </div>
+
+            {/* How We Determined This - Outside shareable card */}
+            <RuleExplanation
+              reasoning={result.reasoning || []}
+              ruleBasis={result.rule_basis || "general_knowledge"}
+              location={location}
+              confidenceLevel={confidenceLevel}
+            />
 
             {/* Ask Question */}
             <div className="animate-fade-in" style={{ animationDelay: "0.3s" }}>
