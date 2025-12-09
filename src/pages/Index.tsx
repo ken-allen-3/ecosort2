@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from "react";
-import { Camera, Loader2, MapPin, Pencil, Trash2 } from "lucide-react";
+import { Camera, Loader2, MapPin, Pencil, Trash2, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useLocationRules } from "@/hooks/useLocationRules";
@@ -27,6 +28,13 @@ interface ClassificationResult {
   rule_basis?: "city_specific" | "state_guidelines" | "national_guidelines" | "general_knowledge";
   reasoning?: string[];
   bin_name?: string;
+  sources?: Array<{
+    name: string;
+    url: string;
+    verified?: boolean;
+    verifiedAt?: string;
+    stability?: "high" | "medium" | "low";
+  }>;
 }
 
 const Index = () => {
@@ -44,6 +52,8 @@ const Index = () => {
     const saved = localStorage.getItem("ecosort-quiz-enabled");
     return saved ? JSON.parse(saved) : false;
   });
+  const [textQuery, setTextQuery] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const { rules: locationRules, isLoading: isLoadingRules, error: rulesError, fetchRules } = useLocationRules();
@@ -321,6 +331,87 @@ const Index = () => {
     }
   };
 
+  const handleTextSearch = async () => {
+    const trimmedQuery = textQuery.trim();
+    const trimmedLocation = location.trim();
+
+    if (!trimmedQuery) {
+      toast({
+        title: "Type something, genius",
+        description: "I need to know what you're looking for",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!trimmedLocation) {
+      toast({
+        title: "Location, please!",
+        description: "I need to know where you are to give you accurate rules",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSearching(true);
+    setResult(null);
+    setImage(null);
+
+    analytics.itemSearched(trimmedQuery);
+
+    try {
+      const { data, error } = await supabase.functions.invoke("search-items", {
+        body: {
+          query: trimmedQuery,
+          location: trimmedLocation.toLowerCase(),
+        },
+      });
+
+      if (error) {
+        console.error("Search error:", error);
+        throw new Error(error.message || "Search failed. Try again?");
+      }
+
+      if (!data) {
+        throw new Error("Got nothing back. The void has claimed your request.");
+      }
+
+      if (!data.category || !data.item) {
+        console.error("Invalid search response:", data);
+        throw new Error("Got a weird response. Let's try that again.");
+      }
+
+      console.log("Search successful:", data);
+      setResult(data);
+
+      analytics.classificationReceived(
+        data.category,
+        data.item,
+        data.confidence,
+        data.rule_basis || "general_knowledge"
+      );
+
+      toast({
+        title: "Found it! 🗑️",
+        description: `That goes in the ${data.category} bin`,
+      });
+    } catch (error) {
+      console.error("Search error:", error);
+
+      const errorMessage = error instanceof Error
+        ? error.message
+        : "Search failed. Try again?";
+
+      toast({
+        title: "Damn it",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
   const hasCompletedOnboarding = !!location;
 
   return (
@@ -388,7 +479,47 @@ const Index = () => {
           />
         )}
 
-       
+        {/* Text Search */}
+        {!image && !result && location && (
+          <Card className="p-4 sm:p-6 animate-fade-in">
+            <div className="space-y-3">
+              <h2 className="text-lg font-semibold flex items-center gap-2">
+                <Search className="w-5 h-5" />
+                Or Just Type That Shit In
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                Can't take a pic? Search for it instead
+              </p>
+              <div className="flex gap-2">
+                <Input
+                  value={textQuery}
+                  onChange={(e) => setTextQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleTextSearch()}
+                  placeholder='Like "pizza box" or whatever'
+                  disabled={isSearching || !location}
+                  className="flex-1"
+                />
+                <Button 
+                  onClick={handleTextSearch} 
+                  disabled={isSearching || !location || !textQuery.trim()}
+                  className="min-w-[100px]"
+                >
+                  {isSearching ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Searching...
+                    </>
+                  ) : (
+                    <>
+                      <Search className="mr-2 h-4 w-4" />
+                      Search
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          </Card>
+        )}
 
         {showQuiz && image && location ? (
           <Card className="p-4 sm:p-6 animate-drop">

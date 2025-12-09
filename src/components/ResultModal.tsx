@@ -14,6 +14,9 @@ import ImpactBadge from "./ImpactBadge";
 interface ResultSource {
   name: string;
   url: string;
+  verified?: boolean;
+  verifiedAt?: string;
+  stability?: "high" | "medium" | "low";
 }
 
 interface ResultModalProps {
@@ -271,19 +274,38 @@ const ResultModal = ({ result, location, onClose }: ResultModalProps) => {
                     <span className="font-medium">Sources: </span>
                     {result.sources.map((source, index) => (
                       <span key={index}>
+                        {source.verified ? (
+                          <span className="text-green-600" title="Source verified">
+                            ✓
+                          </span>
+                        ) : (
+                          <span className="text-amber-600" title="Could not verify source">
+                            ⚠
+                          </span>
+                        )}
                         <a
                           href={source.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-primary hover:text-primary/80 hover:underline inline-flex items-center gap-0.5"
+                          className="text-primary hover:text-primary/80 hover:underline inline-flex items-center gap-0.5 ml-1"
                         >
                           <sup className="mr-0.5">[{index + 1}]</sup>
                           {source.name}
                           <ExternalLink className="w-2.5 h-2.5 ml-0.5" />
                         </a>
+                        {source.stability === "low" && (
+                          <span className="text-muted-foreground/60 ml-1" title="Source may change">
+                            (unstable)
+                          </span>
+                        )}
                         {index < result.sources!.length - 1 && ", "}
                       </span>
                     ))}
+                    {result.sources.some(s => s.verifiedAt) && (
+                      <div className="mt-1 text-[10px] text-muted-foreground/50">
+                        Last checked: {new Date(result.sources.find(s => s.verifiedAt)!.verifiedAt!).toLocaleDateString()}
+                      </div>
+                    )}
                   </div>
                 )}
               </Card>

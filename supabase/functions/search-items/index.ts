@@ -14,12 +14,12 @@ serve(async (req) => {
   }
 
   try {
-    const { image, location } = await req.json();
+    const { query, location } = await req.json();
     
     // Validate inputs
-    if (!image || typeof image !== 'string') {
+    if (!query || typeof query !== 'string' || query.trim().length === 0) {
       return new Response(
-        JSON.stringify({ error: "No valid image provided" }),
+        JSON.stringify({ error: "No search query provided" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -27,14 +27,6 @@ serve(async (req) => {
     if (!location || typeof location !== 'string' || location.trim().length === 0) {
       return new Response(
         JSON.stringify({ error: "Location is required" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Validate image data URL format
-    if (!image.startsWith('data:image/')) {
-      return new Response(
-        JSON.stringify({ error: "Invalid image format" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -50,9 +42,10 @@ serve(async (req) => {
     }
 
     const cityName = location.trim();
-    console.log("Classifying item for location:", cityName);
+    const searchQuery = query.trim();
+    console.log("Searching for item:", searchQuery, "in location:", cityName);
 
-    // Call Lovable AI with vision model - include location in prompt for AI knowledge
+    // Use AI to classify the text query
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -109,25 +102,11 @@ For rule_basis:
 - Use "national_guidelines" if falling back to general US recycling standards
 - Use "general_knowledge" if this is just common recycling knowledge
 
-For reasoning, provide 2-4 short steps explaining your logic, like:
-- "This is a plastic bottle with recycling symbol #1 (PET)"
-- "PET plastics are widely accepted in curbside recycling"
-- "${cityName} accepts plastics #1-7 in their blue bin program"`,
+For reasoning, provide 2-4 short steps explaining your logic.`,
           },
           {
             role: "user",
-            content: [
-              {
-                type: "text",
-                text: `I'm in ${cityName}. Which fucking bin does this go in?`,
-              },
-              {
-                type: "image_url",
-                image_url: {
-                  url: image,
-                },
-              },
-            ],
+            content: `I'm in ${cityName}. Which fucking bin does "${searchQuery}" go in?`,
           },
         ],
       }),
@@ -143,14 +122,14 @@ For reasoning, provide 2-4 short steps explaining your logic, like:
           { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-      
+
       if (response.status === 402) {
         return new Response(
           JSON.stringify({ error: "The AI needs a coffee break. Try again later." }),
           { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-      
+
       throw new Error(`AI classification failed: ${response.status}`);
     }
 
@@ -175,7 +154,7 @@ For reasoning, provide 2-4 short steps explaining your logic, like:
 
     console.log("Cleaned JSON string:", jsonString);
 
-    // Parse the JSON response with error handling
+    // Parse the JSON response
     let result;
     try {
       result = JSON.parse(jsonString);
@@ -184,7 +163,7 @@ For reasoning, provide 2-4 short steps explaining your logic, like:
       console.error("Failed to parse:", jsonString);
       throw new Error("Invalid response format from AI");
     }
-    
+
     console.log("Parsed classification:", result);
 
     // Validate result structure
@@ -239,30 +218,27 @@ For reasoning, provide 2-4 short steps explaining your logic, like:
         }
       } catch (validationError) {
         console.error("Source validation failed:", validationError);
-        // Don't fail the whole request if validation fails - just log it
-        // Users still get the AI response, just without validation metadata
+        // Don't fail the whole request if validation fails
       }
     }
 
-    // Add disclaimer about verifying with local authorities
+    // Add disclaimer
     result.disclaimer = `Rules vary, and cities love changing them. When in doubt, check ${cityName}'s waste management website.`;
 
-    console.log("Returning final result:", result);
+    console.log("Returning search result:", result);
 
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("Error in classify-item function:", error);
+    console.error("Error in search-items function:", error);
     
-    // Provide more specific error messages
     let errorMessage = "Something broke. Not sure what, but it wasn't your fault. Probably.";
     let statusCode = 500;
     
     if (error instanceof Error) {
       errorMessage = error.message;
       
-      // Check for specific error types
       if (error.message.includes("JSON") || error.message.includes("parse")) {
         errorMessage = "Got a weird response. Let's try that again.";
       } else if (error.message.includes("timeout") || error.message.includes("fetch")) {

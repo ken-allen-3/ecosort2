@@ -1,7 +1,4 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { validateAndCacheSources } from "../_shared/sourceCache.ts";
-import { getDomainStability } from "../_shared/sourceValidator.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -191,57 +188,6 @@ For reasoning, provide 2-4 short steps explaining your logic, like:
     if (!result.category || !result.item) {
       console.error("Missing required fields in result:", result);
       throw new Error("Incomplete classification result");
-    }
-
-    // Validate AI-returned sources before showing to users
-    if (result.sources && result.sources.length > 0) {
-      try {
-        console.log("Validating sources for:", cityName, result.item);
-        
-        // Convert AI sources to SourceMetadata format
-        const sourcesMetadata = result.sources.map((s: any) => ({
-          type: 'url' as const,
-          value: s.url || '',
-          verified: false,
-          stability: getDomainStability(s.url || '')
-        }));
-        
-        // Create Supabase client for database access
-        const supabaseUrl = Deno.env.get("SUPABASE_URL");
-        const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-        
-        if (supabaseUrl && supabaseKey) {
-          const supabase = createClient(supabaseUrl, supabaseKey);
-          
-          // Validate and cache sources
-          const validatedSources = await validateAndCacheSources(
-            supabase,
-            cityName.toLowerCase(),
-            result.item,
-            result.explanation,
-            sourcesMetadata
-          );
-          
-          // Replace with validated sources
-          result.sources = validatedSources
-            .filter(s => s.type === 'url' && s.value) // Only include valid URLs
-            .map(s => ({
-              name: s.type === 'url' ? new URL(s.value).hostname.replace('www.', '') : s.value,
-              url: s.value,
-              verified: s.verified,
-              verifiedAt: s.verifiedAt,
-              stability: s.stability
-            }));
-          
-          console.log(`Validated ${result.sources.length} sources`);
-        } else {
-          console.warn("Supabase not configured, skipping source validation");
-        }
-      } catch (validationError) {
-        console.error("Source validation failed:", validationError);
-        // Don't fail the whole request if validation fails - just log it
-        // Users still get the AI response, just without validation metadata
-      }
     }
 
     // Add disclaimer about verifying with local authorities
