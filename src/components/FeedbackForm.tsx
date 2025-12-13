@@ -36,11 +36,7 @@ const FeedbackForm = ({
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   const sendToZapier = async () => {
-    const webhookUrl = import.meta.env.VITE_ZAPIER_FEEDBACK_WEBHOOK;
-    if (!webhookUrl) {
-      console.log("No Zapier webhook configured");
-      return;
-    }
+    const webhookUrl = "https://hooks.zapier.com/hooks/catch/9034799/ufp7qyi/";
 
     try {
       await fetch(webhookUrl, {
