@@ -5,6 +5,86 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Validate a URL by making a HEAD request
+async function validateUrl(url: string): Promise<boolean> {
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
+    
+    const response = await fetch(url, {
+      method: "HEAD",
+      signal: controller.signal,
+      headers: {
+        "User-Agent": "Mozilla/5.0 (compatible; WFB-Bot/1.0)",
+      },
+    });
+    
+    clearTimeout(timeoutId);
+    return response.ok || response.status === 405; // 405 means HEAD not allowed but URL exists
+  } catch {
+    return false;
+  }
+}
+
+// Generate Earth911 search URL as fallback
+function getEarth911FallbackUrl(cityName: string): { name: string; url: string; type: string } {
+  const encodedCity = encodeURIComponent(cityName);
+  return {
+    name: "Earth911 Recycling Search",
+    url: `https://search.earth911.com/?what=recycling&where=${encodedCity}`,
+    type: "directory",
+  };
+}
+
+// Validate sources and replace invalid ones with fallback
+async function validateAndFixSources(
+  sources: Array<{ name: string; url: string; type: string }> | undefined,
+  cityName: string
+): Promise<Array<{ name: string; url: string; type: string }>> {
+  if (!sources || !Array.isArray(sources) || sources.length === 0) {
+    console.log("No sources provided, using Earth911 fallback");
+    return [getEarth911FallbackUrl(cityName)];
+  }
+
+  const validatedSources: Array<{ name: string; url: string; type: string }> = [];
+  
+  // Validate each source URL in parallel
+  const validationResults = await Promise.all(
+    sources.map(async (source) => {
+      if (!source.url || typeof source.url !== "string") {
+        return { source, isValid: false };
+      }
+      
+      // Basic URL format check
+      try {
+        new URL(source.url);
+      } catch {
+        console.log(`Invalid URL format: ${source.url}`);
+        return { source, isValid: false };
+      }
+      
+      const isValid = await validateUrl(source.url);
+      console.log(`URL validation: ${source.url} - ${isValid ? "valid" : "invalid"}`);
+      return { source, isValid };
+    })
+  );
+
+  // Collect valid sources
+  for (const { source, isValid } of validationResults) {
+    if (isValid) {
+      validatedSources.push(source);
+    }
+  }
+
+  // If no valid sources, add Earth911 fallback
+  if (validatedSources.length === 0) {
+    console.log("No valid sources found, using Earth911 fallback");
+    return [getEarth911FallbackUrl(cityName)];
+  }
+
+  return validatedSources;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -136,6 +216,11 @@ Be accurate. If you don't have specific knowledge about ${cityName}, use state-l
       console.error("JSON parse error:", parseError);
       throw new Error("Invalid response format from AI");
     }
+
+    // Validate and fix source URLs
+    console.log("Validating source URLs...");
+    result.sources = await validateAndFixSources(result.sources, cityName);
+    console.log(`Validated sources: ${result.sources.length} valid`);
 
     // Add timestamp for caching purposes
     result.fetched_at = new Date().toISOString();
