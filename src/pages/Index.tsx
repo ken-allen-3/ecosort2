@@ -652,6 +652,7 @@ const Index = () => {
         <ResultModal
           result={result}
           location={location}
+          image={image}
           onClose={() => {
             setResult(null);
             setImage(null);
