@@ -14,7 +14,7 @@ import QuizMode from "@/components/QuizMode";
 import QuizResult from "@/components/QuizResult";
 import QuizSettings from "@/components/QuizSettings";
 import LocationInput from "@/components/LocationInput";
-import LocationRulesPreview from "@/components/LocationRulesPreview";
+
 import TextInput from "@/components/TextInput";
 import { checkBrowserCompatibility, getBrowserInfo } from "@/lib/browserCompat";
 
@@ -481,15 +481,6 @@ const Index = () => {
           </div>
         )}
 
-        {/* Location Rules Preview */}
-        {!image && !result && location && (
-          <LocationRulesPreview 
-            rules={locationRules} 
-            isLoading={isLoadingRules} 
-            error={rulesError}
-            onRefresh={() => fetchRules(location, true)}
-          />
-        )}
 
        
 
@@ -653,6 +644,7 @@ const Index = () => {
           result={result}
           location={location}
           image={image}
+          locationRules={locationRules}
           onClose={() => {
             setResult(null);
             setImage(null);
