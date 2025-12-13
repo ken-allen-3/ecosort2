@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Loader2, Leaf, Recycle, AlertTriangle, ChevronDown, CheckCircle2, ExternalLink } from "lucide-react";
+import { Loader2, Leaf, Recycle, AlertTriangle, ChevronDown, CheckCircle2, ExternalLink, RefreshCw, Search } from "lucide-react";
 import { LocationRules } from "@/hooks/useLocationRules";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
@@ -7,9 +7,10 @@ interface LocationRulesPreviewProps {
   rules: LocationRules | null;
   isLoading: boolean;
   error: string | null;
+  onRefresh?: () => void;
 }
 
-const LocationRulesPreview = ({ rules, isLoading, error }: LocationRulesPreviewProps) => {
+const LocationRulesPreview = ({ rules, isLoading, error, onRefresh }: LocationRulesPreviewProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
   if (isLoading) {
@@ -80,7 +81,21 @@ const LocationRulesPreview = ({ rules, isLoading, error }: LocationRulesPreviewP
 
           {rules.sources && rules.sources.length > 0 && (
             <div className="pt-2 border-t border-border/30">
-              <p className="text-muted-foreground/70 mb-1">Sources:</p>
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-muted-foreground/70">Sources:</p>
+                {onRefresh && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onRefresh();
+                    }}
+                    className="text-muted-foreground/50 hover:text-muted-foreground transition-colors p-1"
+                    title="Refresh sources"
+                  >
+                    <RefreshCw className="w-3 h-3" />
+                  </button>
+                )}
+              </div>
               <div className="flex flex-wrap gap-2">
                 {rules.sources.map((source, index) => (
                   <a
@@ -90,6 +105,7 @@ const LocationRulesPreview = ({ rules, isLoading, error }: LocationRulesPreviewP
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1 text-primary hover:text-primary/80 hover:underline transition-colors"
                   >
+                    {source.type === "search" && <Search className="w-2.5 h-2.5" />}
                     <span>{source.name}</span>
                     <ExternalLink className="w-2.5 h-2.5" />
                   </a>

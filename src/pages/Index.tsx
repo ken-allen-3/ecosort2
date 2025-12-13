@@ -46,7 +46,7 @@ const Index = () => {
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
-  const { rules: locationRules, isLoading: isLoadingRules, error: rulesError, fetchRules } = useLocationRules();
+  const { rules: locationRules, isLoading: isLoadingRules, error: rulesError, fetchRules, clearRules } = useLocationRules();
 
   const handleOnboardingComplete = (newLocation: string) => {
     setLocation(newLocation);
@@ -384,7 +384,8 @@ const Index = () => {
           <LocationRulesPreview 
             rules={locationRules} 
             isLoading={isLoadingRules} 
-            error={rulesError} 
+            error={rulesError}
+            onRefresh={() => fetchRules(location, true)}
           />
         )}
 
