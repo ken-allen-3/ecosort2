@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 export interface LocationRuleSource {
   name: string;
   url: string;
-  type: "city" | "county" | "state" | "waste_hauler" | "epa";
+  type: "city" | "county" | "state" | "waste_hauler" | "epa" | "directory" | "general" | "search";
 }
 
 export interface LocationRules {
@@ -32,7 +32,7 @@ interface UseLocationRulesReturn {
   rules: LocationRules | null;
   isLoading: boolean;
   error: string | null;
-  fetchRules: (location: string) => Promise<void>;
+  fetchRules: (location: string, forceRefresh?: boolean) => Promise<void>;
   clearRules: () => void;
 }
 
@@ -88,7 +88,7 @@ export const useLocationRules = (): UseLocationRulesReturn => {
     }
   }, []);
 
-  const fetchRules = useCallback(async (location: string) => {
+  const fetchRules = useCallback(async (location: string, forceRefresh = false) => {
     if (!location.trim()) {
       setError("Location is required");
       return;
@@ -96,13 +96,19 @@ export const useLocationRules = (): UseLocationRulesReturn => {
 
     const trimmedLocation = location.trim();
     
-    // Check cache first
-    const cached = getCachedRules(trimmedLocation);
-    if (cached) {
-      console.log("Using cached location rules for:", trimmedLocation);
-      setRules(cached);
-      setError(null);
-      return;
+    // Clear cache if force refresh requested
+    if (forceRefresh) {
+      console.log("Force refresh requested, clearing cache");
+      localStorage.removeItem(CACHE_KEY);
+    } else {
+      // Check cache first
+      const cached = getCachedRules(trimmedLocation);
+      if (cached) {
+        console.log("Using cached location rules for:", trimmedLocation);
+        setRules(cached);
+        setError(null);
+        return;
+      }
     }
 
     setIsLoading(true);
