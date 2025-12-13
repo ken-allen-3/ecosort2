@@ -14,7 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      verdict_feedback: {
+        Row: {
+          created_at: string
+          feedback_text: string | null
+          id: string
+          image_data: string | null
+          item_name: string
+          reported_category: string
+          suggested_category: string | null
+          user_location: string | null
+        }
+        Insert: {
+          created_at?: string
+          feedback_text?: string | null
+          id?: string
+          image_data?: string | null
+          item_name: string
+          reported_category: string
+          suggested_category?: string | null
+          user_location?: string | null
+        }
+        Update: {
+          created_at?: string
+          feedback_text?: string | null
+          id?: string
+          image_data?: string | null
+          item_name?: string
+          reported_category?: string
+          suggested_category?: string | null
+          user_location?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

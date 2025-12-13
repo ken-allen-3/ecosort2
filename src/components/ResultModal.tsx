@@ -1,6 +1,6 @@
 import { useState, useRef, useMemo } from "react";
 import html2canvas from "html2canvas";
-import { Recycle, Leaf, Trash2, X, MapPin, Share2, Check, Camera, ExternalLink } from "lucide-react";
+import { Recycle, Leaf, Trash2, X, MapPin, Share2, Check, Camera, ExternalLink, Flag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
@@ -11,6 +11,7 @@ import RuleExplanation from "./RuleExplanation";
 import WhyAIModal from "./WhyAIModal";
 import EnvironmentalImpact from "./EnvironmentalImpact";
 import ImpactBadge from "./ImpactBadge";
+import FeedbackForm from "./FeedbackForm";
 
 interface ResultSource {
   name: string;
@@ -38,6 +39,7 @@ interface ResultModalProps {
 const ResultModal = ({ result, location, image, locationRules, onClose }: ResultModalProps) => {
   const [copied, setCopied] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
+  const [showFeedback, setShowFeedback] = useState(false);
   const shareCardRef = useRef<HTMLDivElement>(null);
 
   const config = useMemo(() => {
@@ -406,6 +408,27 @@ const ResultModal = ({ result, location, image, locationRules, onClose }: Result
                   <AskQuestion result={result} location={location} />
                 </div>
               </details>
+            </div>
+
+            {/* Feedback Section */}
+            <div className="animate-fade-in" style={{ animationDelay: "0.35s" }}>
+              {showFeedback ? (
+                <FeedbackForm
+                  itemName={result.item}
+                  currentCategory={result.category}
+                  userLocation={location}
+                  imageData={image || undefined}
+                  onClose={() => setShowFeedback(false)}
+                />
+              ) : (
+                <button
+                  onClick={() => setShowFeedback(true)}
+                  className="w-full text-center text-sm text-muted-foreground/70 hover:text-muted-foreground transition-colors py-2 flex items-center justify-center gap-1.5"
+                >
+                  <Flag className="w-3 h-3" />
+                  Wrong verdict? Let us know
+                </button>
+              )}
             </div>
 
             {/* Minimal footer with Why AI link */}
