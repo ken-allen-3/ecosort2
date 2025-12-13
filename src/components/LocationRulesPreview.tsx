@@ -17,7 +17,7 @@ const LocationRulesPreview = ({ rules, isLoading, error, onRefresh }: LocationRu
     return (
       <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
         <Loader2 className="w-3 h-3 animate-spin" />
-        <span>Loading local rules...</span>
+        <span>Finding your local recycling rules...</span>
       </div>
     );
   }
@@ -26,7 +26,7 @@ const LocationRulesPreview = ({ rules, isLoading, error, onRefresh }: LocationRu
     return (
       <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
         <AlertTriangle className="w-3 h-3 text-accent" />
-        <span>Rules unavailable</span>
+        <span>Couldn't load local rules</span>
       </div>
     );
   }
@@ -36,11 +36,11 @@ const LocationRulesPreview = ({ rules, isLoading, error, onRefresh }: LocationRu
   const getBasisBadge = () => {
     switch (rules.rule_basis) {
       case "city_specific":
-        return { text: `${rules.city} rules`, color: "text-compostable" };
+        return { text: `Using ${rules.city} rules`, color: "text-compostable" };
       case "state_guidelines":
-        return { text: "State rules", color: "text-primary" };
+        return { text: "Using state guidelines", color: "text-primary" };
       default:
-        return { text: "US standards", color: "text-muted-foreground" };
+        return { text: "Using general US guidelines", color: "text-muted-foreground" };
     }
   };
 
@@ -62,7 +62,7 @@ const LocationRulesPreview = ({ rules, isLoading, error, onRefresh }: LocationRu
             {rules.has_composting && (
               <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-compostable/20 text-compostable rounded-full">
                 <Leaf className="w-2.5 h-2.5" />
-                Compost
+                Composting available
               </span>
             )}
             {rules.bin_names?.recycling && (
@@ -75,14 +75,14 @@ const LocationRulesPreview = ({ rules, isLoading, error, onRefresh }: LocationRu
 
           {rules.not_accepted && rules.not_accepted.length > 0 && (
             <p className="text-muted-foreground">
-              <span className="text-accent">⚠️</span> {rules.not_accepted.slice(0, 3).join(", ")}
+              <span className="font-medium text-accent">Not recyclable here:</span> {rules.not_accepted.slice(0, 3).join(", ")}
             </p>
           )}
 
           {rules.sources && rules.sources.length > 0 && (
             <div className="pt-2 border-t border-border/30">
               <div className="flex items-center justify-between mb-1">
-                <p className="text-muted-foreground/70">Sources:</p>
+                <p className="text-muted-foreground/70">Verify with official sources:</p>
                 {onRefresh && (
                   <button
                     onClick={(e) => {
@@ -90,7 +90,8 @@ const LocationRulesPreview = ({ rules, isLoading, error, onRefresh }: LocationRu
                       onRefresh();
                     }}
                     className="text-muted-foreground/50 hover:text-muted-foreground transition-colors p-1"
-                    title="Refresh sources"
+                    title="Find new sources"
+                    aria-label="Refresh sources"
                   >
                     <RefreshCw className="w-3 h-3" />
                   </button>
