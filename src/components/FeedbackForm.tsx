@@ -35,6 +35,34 @@ const FeedbackForm = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
+  const sendToZapier = async () => {
+    const webhookUrl = import.meta.env.VITE_ZAPIER_FEEDBACK_WEBHOOK;
+    if (!webhookUrl) {
+      console.log("No Zapier webhook configured");
+      return;
+    }
+
+    try {
+      await fetch(webhookUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        mode: "no-cors",
+        body: JSON.stringify({
+          timestamp: new Date().toISOString(),
+          item_name: itemName,
+          reported_category: currentCategory,
+          suggested_category: suggestedCategory || "",
+          user_location: userLocation,
+          feedback_text: feedbackText || "",
+          has_image: !!imageData,
+        }),
+      });
+      console.log("Feedback sent to Zapier");
+    } catch (error) {
+      console.error("Error sending to Zapier:", error);
+    }
+  };
+
   const handleSubmit = async () => {
     setIsSubmitting(true);
     
@@ -49,6 +77,9 @@ const FeedbackForm = ({
       });
 
       if (error) throw error;
+
+      // Send to Zapier in background (don't await)
+      sendToZapier();
 
       setIsSubmitted(true);
       toast({
