@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { analytics } from "@/lib/analytics";
+import { LocationRules } from "@/hooks/useLocationRules";
 import AskQuestion from "./AskQuestion";
 import RuleExplanation from "./RuleExplanation";
 import WhyAIModal from "./WhyAIModal";
@@ -30,10 +31,11 @@ interface ResultModalProps {
   };
   location: string;
   image?: string | null;
+  locationRules?: LocationRules | null;
   onClose: () => void;
 }
 
-const ResultModal = ({ result, location, image, onClose }: ResultModalProps) => {
+const ResultModal = ({ result, location, image, locationRules, onClose }: ResultModalProps) => {
   const [copied, setCopied] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
   const shareCardRef = useRef<HTMLDivElement>(null);
@@ -385,12 +387,13 @@ const ResultModal = ({ result, location, image, onClose }: ResultModalProps) => 
                 </summary>
                 
                 <div className="space-y-3 pt-3">
-                  {/* How we figured this out */}
+                  {/* How we figured this out + Location rules */}
                   <RuleExplanation
                     reasoning={result.reasoning || []}
                     ruleBasis={result.rule_basis || "general_knowledge"}
                     location={location}
                     confidenceLevel={confidenceLevel}
+                    locationRules={locationRules}
                   />
 
                   {/* Environmental Impact */}
