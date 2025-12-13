@@ -2,3 +2,18 @@ project_id = "mfprozqpeusmeecbtbop"
 
 [functions.fetch-location-rules]
 verify_jwt = false
+
+[functions.classify-item]
+verify_jwt = false
+
+[functions.classify-text]
+verify_jwt = false
+
+[functions.ask-about-result]
+verify_jwt = false
+
+[functions.ip-geolocation]
+verify_jwt = false
+
+[functions.reverse-geocode]
+verify_jwt = false

@@ -15,6 +15,7 @@ import QuizResult from "@/components/QuizResult";
 import QuizSettings from "@/components/QuizSettings";
 import LocationInput from "@/components/LocationInput";
 import LocationRulesPreview from "@/components/LocationRulesPreview";
+import TextInput from "@/components/TextInput";
 import { checkBrowserCompatibility, getBrowserInfo } from "@/lib/browserCompat";
 
 interface ClassificationResult {
@@ -40,6 +41,7 @@ const Index = () => {
   const [editedLocation, setEditedLocation] = useState("");
   const [showQuiz, setShowQuiz] = useState(false);
   const [userGuess, setUserGuess] = useState<"recyclable" | "compostable" | "trash" | null>(null);
+  const [isAnalyzingText, setIsAnalyzingText] = useState(false);
   const [quizEnabled, setQuizEnabled] = useState(() => {
     const saved = localStorage.getItem("ecosort-quiz-enabled");
     return saved ? JSON.parse(saved) : false;
@@ -321,6 +323,106 @@ const Index = () => {
     }
   };
 
+  const analyzeText = async (itemText: string) => {
+    const trimmedLocation = location.trim();
+    if (!trimmedLocation) {
+      toast({
+        title: "Location, please!",
+        description: "I need to know where you are to give you accurate rules",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (isAnalyzingText) {
+      return;
+    }
+    
+    setIsAnalyzingText(true);
+    setResult(null);
+    setImage(null);
+    
+    analytics.photoSubmitted(trimmedLocation); // Reuse analytics event
+    
+    const timeoutId = setTimeout(() => {
+      toast({
+        title: "Still working on it...",
+        description: "This is taking longer than usual. Hang tight.",
+      });
+    }, 10000);
+    
+    try {
+      console.log("Starting text classification:", itemText, "for location:", trimmedLocation);
+      
+      const { data, error } = await supabase.functions.invoke("classify-text", {
+        body: { 
+          item: itemText,
+          location: trimmedLocation.toLowerCase()
+        },
+      });
+
+      clearTimeout(timeoutId);
+      console.log("Text classification response:", { data, error });
+
+      if (error) {
+        console.error("Edge function error:", error);
+        
+        if (error.message?.includes("429") || error.message?.includes("rate limit")) {
+          throw new Error("Whoa there, slow down! Try again in a sec.");
+        }
+        if (error.message?.includes("402") || error.message?.includes("payment")) {
+          throw new Error("Service is having a moment. Try again later.");
+        }
+        
+        throw new Error(error.message || "Something broke. Not my fault. Probably.");
+      }
+
+      if (!data) {
+        throw new Error("Got nothing back. The void has claimed your request.");
+      }
+
+      if (!data.category || !data.item) {
+        console.error("Invalid response structure:", data);
+        throw new Error("Got a weird response. Let's try that again.");
+      }
+
+      if (!["recyclable", "compostable", "trash"].includes(data.category)) {
+        console.error("Invalid category:", data.category);
+        throw new Error("AI gave me a category I don't understand. Classic.");
+      }
+
+      console.log("Text classification successful:", data);
+      setResult(data);
+      
+      analytics.classificationReceived(
+        data.category,
+        data.item,
+        data.confidence,
+        data.rule_basis || "general_knowledge"
+      );
+      
+      toast({
+        title: "Got it!",
+        description: `${data.item} goes in the ${data.category} bin`,
+      });
+    } catch (error) {
+      clearTimeout(timeoutId);
+      console.error("Text classification error:", error);
+      
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : "Couldn't figure that out. Try again?";
+      
+      toast({
+        title: "Well, damn",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    } finally {
+      setIsAnalyzingText(false);
+    }
+  };
+
   const hasCompletedOnboarding = !!location;
 
   return (
@@ -426,10 +528,20 @@ const Index = () => {
                   size="lg"
                   onClick={() => fileInputRef.current?.click()}
                   className="w-full sm:w-auto min-h-[48px] text-base"
+                  disabled={isAnalyzingText}
                 >
                   <Camera className="mr-2 h-5 w-5" />
                   Scan This Crap 📸
                 </Button>
+
+                {/* Text input option */}
+                <div className="w-full max-w-md mx-auto">
+                  <TextInput 
+                    onSubmit={analyzeText} 
+                    isLoading={isAnalyzingText}
+                    disabled={isAnalyzing}
+                  />
+                </div>
                 
                 {/* Quiz mode toggle */}
                 <div className="flex items-center justify-center gap-3 pt-3">
