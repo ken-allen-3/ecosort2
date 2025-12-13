@@ -29,10 +29,11 @@ interface ResultModalProps {
     sources?: ResultSource[];
   };
   location: string;
+  image?: string | null;
   onClose: () => void;
 }
 
-const ResultModal = ({ result, location, onClose }: ResultModalProps) => {
+const ResultModal = ({ result, location, image, onClose }: ResultModalProps) => {
   const [copied, setCopied] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
   const shareCardRef = useRef<HTMLDivElement>(null);
@@ -215,27 +216,49 @@ const ResultModal = ({ result, location, onClose }: ResultModalProps) => {
             {/* Shareable Card - This gets captured for screenshot */}
             <div ref={shareCardRef} className="space-y-4">
               {/* Category Badge */}
-              <Card className={`p-8 text-center border-3 ${config.borderColor} ${config.bgColor} animate-bounce-in`}>
-                <div className={`w-24 h-24 mx-auto rounded-lg ${config.bgColor} border-2 ${config.borderColor} flex items-center justify-center mb-4 animate-wiggle`}>
-                  <Icon className={`w-12 h-12 ${config.color}`} />
-                </div>
-                <h3 className="font-display text-4xl sm:text-5xl mb-2 tracking-wide">{config.title} {config.emoji}</h3>
-                <p className="text-lg text-muted-foreground mb-1">{config.subtitle}</p>
-                <p className="text-xl text-foreground font-bold mb-2">{result.item}</p>
-                
-                {/* Impact Badge - only shows for recognized items */}
-                <div className="mb-3">
-                  <ImpactBadge 
-                    item={result.item} 
-                    category={result.category} 
-                    confidence={result.confidence} 
+              <Card className={`relative overflow-hidden p-8 text-center border-3 ${config.borderColor} ${config.bgColor} animate-bounce-in`}>
+                {/* Background image from scan */}
+                {image && (
+                  <div 
+                    className="absolute inset-0 opacity-15"
+                    style={{
+                      backgroundImage: `url(${image})`,
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
+                      filter: "blur(8px)",
+                    }}
                   />
-                </div>
-                
-                <div className="inline-flex items-center gap-2 text-sm text-muted-foreground bg-background/50 px-3 py-1 rounded-full border border-border">
-                  <span className="font-medium">
-                    {result.confidence > 1 ? result.confidence : (result.confidence * 100).toFixed(0)}% sure about this
-                  </span>
+                )}
+                <div className="relative z-10">
+                  <div className={`w-24 h-24 mx-auto rounded-lg ${config.bgColor} border-2 ${config.borderColor} flex items-center justify-center mb-4 animate-wiggle overflow-hidden`}>
+                    {image ? (
+                      <img 
+                        src={image} 
+                        alt={result.item} 
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <Icon className={`w-12 h-12 ${config.color}`} />
+                    )}
+                  </div>
+                  <h3 className="font-display text-4xl sm:text-5xl mb-2 tracking-wide">{config.title} {config.emoji}</h3>
+                  <p className="text-lg text-muted-foreground mb-1">{config.subtitle}</p>
+                  <p className="text-xl text-foreground font-bold mb-2">{result.item}</p>
+                  
+                  {/* Impact Badge - only shows for recognized items */}
+                  <div className="mb-3">
+                    <ImpactBadge 
+                      item={result.item} 
+                      category={result.category} 
+                      confidence={result.confidence} 
+                    />
+                  </div>
+                  
+                  <div className="inline-flex items-center gap-2 text-sm text-muted-foreground bg-background/50 px-3 py-1 rounded-full border border-border">
+                    <span className="font-medium">
+                      {result.confidence > 1 ? result.confidence : (result.confidence * 100).toFixed(0)}% sure about this
+                    </span>
+                  </div>
                 </div>
               </Card>
 
