@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useLocationRules } from "@/hooks/useLocationRules";
+import { useScanHistory } from "@/hooks/useScanHistory";
 import { analytics } from "@/lib/analytics";
 import ResultModal from "@/components/ResultModal";
 import WelcomeOverlay from "@/components/WelcomeOverlay";
@@ -14,7 +15,7 @@ import QuizMode from "@/components/QuizMode";
 import QuizResult from "@/components/QuizResult";
 import QuizSettings from "@/components/QuizSettings";
 import LocationInput from "@/components/LocationInput";
-
+import ScanHistory from "@/components/ScanHistory";
 import TextInput from "@/components/TextInput";
 import { checkBrowserCompatibility, getBrowserInfo } from "@/lib/browserCompat";
 
@@ -49,6 +50,7 @@ const Index = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const { rules: locationRules, isLoading: isLoadingRules, error: rulesError, fetchRules, clearRules } = useLocationRules();
+  const { history, addScan, clearHistory } = useScanHistory();
 
   const handleOnboardingComplete = (newLocation: string) => {
     setLocation(newLocation);
@@ -287,6 +289,15 @@ const Index = () => {
       console.log("Classification successful:", data);
       setResult(data);
       
+      // Save to scan history
+      addScan({
+        item: data.item,
+        category: data.category,
+        confidence: data.confidence,
+        location: trimmedLocation,
+        imagePreview: image,
+      });
+      
       analytics.classificationReceived(
         data.category,
         data.item,
@@ -393,6 +404,14 @@ const Index = () => {
 
       console.log("Text classification successful:", data);
       setResult(data);
+      
+      // Save to scan history (no image for text scans)
+      addScan({
+        item: data.item,
+        category: data.category,
+        confidence: data.confidence,
+        location: trimmedLocation,
+      });
       
       analytics.classificationReceived(
         data.category,
@@ -617,6 +636,8 @@ const Index = () => {
         )}
 
         {!image && !result && <ExampleImages onExampleClick={handleExampleClick} />}
+
+        {!result && <ScanHistory history={history} onClear={clearHistory} />}
 
         {!result && (
           <div className="text-center text-xs sm:text-sm text-muted-foreground px-4">
