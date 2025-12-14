@@ -162,15 +162,22 @@ For reasoning, provide 2-4 short steps explaining your logic, like:
 
     console.log("Raw AI content:", content);
 
-    // Strip markdown code blocks if present
+    // Extract JSON from response - handle text before/after code blocks
     let jsonString = content.trim();
-    if (jsonString.startsWith("```json")) {
-      jsonString = jsonString.replace(/^```json\s*\n?/, "").replace(/\n?```\s*$/, "");
-    } else if (jsonString.startsWith("```")) {
-      jsonString = jsonString.replace(/^```\s*\n?/, "").replace(/\n?```\s*$/, "");
+    
+    // Check if response contains a JSON code block
+    const jsonBlockMatch = jsonString.match(/```json\s*\n?([\s\S]*?)\n?```/);
+    if (jsonBlockMatch) {
+      jsonString = jsonBlockMatch[1].trim();
+    } else {
+      // Try to find raw JSON object if no code block
+      const jsonObjectMatch = jsonString.match(/\{[\s\S]*\}/);
+      if (jsonObjectMatch) {
+        jsonString = jsonObjectMatch[0];
+      }
     }
 
-    console.log("Cleaned JSON string:", jsonString);
+    console.log("Extracted JSON string:", jsonString);
 
     // Parse the JSON response with error handling
     let result;
