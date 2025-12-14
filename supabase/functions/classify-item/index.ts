@@ -5,6 +5,86 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+interface VerifiedSource {
+  name: string;
+  url: string;
+}
+
+// Use Perplexity to find real, verified source URLs for the item + location
+async function findVerifiedSources(
+  itemDescription: string,
+  cityName: string,
+  category: string,
+  perplexityKey: string
+): Promise<VerifiedSource[]> {
+  try {
+    console.log("Finding verified sources with Perplexity...");
+    
+    const response = await fetch("https://api.perplexity.ai/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${perplexityKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "sonar",
+        messages: [
+          {
+            role: "user",
+            content: `Find official recycling or waste disposal guidelines for ${cityName} that explain how to dispose of "${itemDescription}" (category: ${category}). I need direct URLs to city, county, or waste hauler websites with current, accessible information about recycling rules.`,
+          },
+        ],
+        search_recency_filter: "year",
+      }),
+    });
+
+    if (!response.ok) {
+      console.error("Perplexity API error:", response.status);
+      return [];
+    }
+
+    const data = await response.json();
+    const citations = data.citations || [];
+    
+    console.log(`Perplexity found ${citations.length} citations`);
+
+    // Convert citations to our source format with meaningful names
+    const sources: VerifiedSource[] = citations.slice(0, 2).map((url: string) => {
+      let name = "Recycling Guide";
+      
+      try {
+        const urlObj = new URL(url);
+        const host = urlObj.hostname.replace("www.", "");
+        
+        if (host.includes(".gov")) {
+          const parts = host.split(".");
+          name = `${parts[0].charAt(0).toUpperCase() + parts[0].slice(1)} Official Guide`;
+        } else if (host.includes("recology")) {
+          name = "Recology Guide";
+        } else if (host.includes("republicservices") || host.includes("republic")) {
+          name = "Republic Services";
+        } else if (host.includes("wastemanagement") || host.includes("wm.com")) {
+          name = "Waste Management";
+        } else if (host.includes("epa")) {
+          name = "EPA Guidelines";
+        } else {
+          // Use domain name as fallback
+          name = host.split(".")[0].charAt(0).toUpperCase() + host.split(".")[0].slice(1);
+        }
+      } catch {
+        // URL parsing failed, use default name
+      }
+      
+      return { name, url };
+    });
+
+    return sources;
+  } catch (error) {
+    console.error("Perplexity search error:", error);
+    return [];
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -37,6 +117,7 @@ serve(async (req) => {
     }
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    const PERPLEXITY_API_KEY = Deno.env.get("PERPLEXITY_API_KEY");
 
     if (!LOVABLE_API_KEY) {
       console.error("LOVABLE_API_KEY not configured");
@@ -89,16 +170,8 @@ Return a JSON object with:
   "explanation": "snarky but helpful explanation of why this goes where it does, mentioning ${cityName}'s specific rules if relevant. Be funny but accurate. Keep it to 2-3 sentences max.",
   "rule_basis": "city_specific" | "state_guidelines" | "national_guidelines" | "general_knowledge",
   "reasoning": ["step 1 of your logic", "step 2", "step 3"],
-  "bin_name": "the local name for this bin type (e.g., 'blue bin', 'green cart', 'recycling container')",
-  "sources": [
-    {
-      "name": "Short source name (e.g., '${cityName} Recycling Guide')",
-      "url": "https://official-url.gov/recycling"
-    }
-  ]
+  "bin_name": "the local name for this bin type (e.g., 'blue bin', 'green cart', 'recycling container')"
 }
-
-CRITICAL: Include 1-2 sources in the sources array. Prefer official city/county government recycling pages, waste hauler websites (Republic Services, Waste Management, etc.), or EPA resources. These help users verify your guidance.
 
 For rule_basis:
 - Use "city_specific" if you have actual knowledge of ${cityName}'s waste program
@@ -109,7 +182,9 @@ For rule_basis:
 For reasoning, provide 2-4 short steps explaining your logic, like:
 - "This is a plastic bottle with recycling symbol #1 (PET)"
 - "PET plastics are widely accepted in curbside recycling"
-- "${cityName} accepts plastics #1-7 in their blue bin program"`,
+- "${cityName} accepts plastics #1-7 in their blue bin program"
+
+IMPORTANT: Return ONLY the JSON object, no additional text before or after.`,
           },
           {
             role: "user",
@@ -195,6 +270,37 @@ For reasoning, provide 2-4 short steps explaining your logic, like:
     if (!result.category || !result.item) {
       console.error("Missing required fields in result:", result);
       throw new Error("Incomplete classification result");
+    }
+
+    // Fetch verified sources using Perplexity (if available)
+    if (PERPLEXITY_API_KEY) {
+      const verifiedSources = await findVerifiedSources(
+        result.item,
+        cityName,
+        result.category,
+        PERPLEXITY_API_KEY
+      );
+      
+      if (verifiedSources.length > 0) {
+        result.sources = verifiedSources;
+        console.log(`Using ${verifiedSources.length} Perplexity-verified sources`);
+      } else {
+        // Fallback to Google search
+        const searchQuery = encodeURIComponent(`${cityName} ${result.item} recycling disposal`);
+        result.sources = [{
+          name: "Search Local Guidelines",
+          url: `https://www.google.com/search?q=${searchQuery}`,
+        }];
+        console.log("Using Google search fallback");
+      }
+    } else {
+      // No Perplexity key - use Google search fallback
+      const searchQuery = encodeURIComponent(`${cityName} recycling guidelines`);
+      result.sources = [{
+        name: "Search Local Guidelines",
+        url: `https://www.google.com/search?q=${searchQuery}`,
+      }];
+      console.log("No Perplexity key, using Google search fallback");
     }
 
     // Add disclaimer about verifying with local authorities
